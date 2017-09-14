@@ -10,6 +10,16 @@ namespace NupkgAnalyzer
 {
     public class EnumerateScriptsUsingNuGetAPIsInPackageCommand : IProcessNupkgCommand
     {
+        private string _tempeExtractionPath;
+        public EnumerateScriptsUsingNuGetAPIsInPackageCommand(string tempExtractionPath)
+        {
+            _tempeExtractionPath = tempExtractionPath;
+        }
+
+        private string GetRandomPath()
+        {
+            return Path.Combine(_tempeExtractionPath, Guid.NewGuid().ToString());
+        }
         public Dictionary<string, string> Execute(ZipArchive archive, LocalPackageInfo localPackage)
         {
 
@@ -26,7 +36,7 @@ namespace NupkgAnalyzer
 
                 foreach (var scriptFile in ps1Files)
                 {
-                    var path = Path.GetTempFileName();
+                    var path = GetRandomPath();
                     scriptFile.ExtractToFile(path, true);
 
                     using (var stream = scriptFile.Open())

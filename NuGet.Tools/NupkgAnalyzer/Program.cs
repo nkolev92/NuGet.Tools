@@ -10,17 +10,18 @@ namespace NupkgAnalyzer
     {
         static void Main(string[] args)
         {
-            string nupkgsPath = @"C:\Users\Roki2\Documents\Code\NuGet\NuGet.Client\artifacts\nupkgs";
+            string nupkgsPath = @"E:\UniquePackages";
 
-            var analyzer = new PackageAnalyzer(nupkgsPath, NuGetDirectoryStructure.V2, Path.GetTempPath());
+            var analyzer = new PackageAnalyzer(nupkgsPath, NuGetDirectoryStructure.V3, Path.GetTempPath());
 
             var commands = new List<IProcessNupkgCommand>() {
                 new EnumeratePPFilesInPackageCommand(),
                 new EnumeratePS1ScriptsInPackageCommand(),
-                new EnumerateScriptsUsingNuGetAPIsInPackageCommand(),
+                new EnumerateScriptsUsingNuGetAPIsInPackageCommand(@"E:\data"),
                 new EnumerateContentFilesInPackageCommand() };
-
+            var beforeRunCommand = new DateTime();
             var results = analyzer.ExecuteCommands(commands);
+            var afterRunCommand = new DateTime();
 
             var values = new List<List<string>>();
 
@@ -44,7 +45,17 @@ namespace NupkgAnalyzer
                 csv.Append(string.Join(",", row)).Append("\r\n");
             }
 
+            var afterProcessing = new DateTime();
+
             File.WriteAllText(Path.Combine(nupkgsPath, "results.csv"), csv.ToString());
+
+            var stats = new StringBuilder();
+            stats.Append("Before command = ").Append(beforeRunCommand.ToLongTimeString());
+            stats.Append("After command = ").Append(afterRunCommand.ToLongTimeString());
+            stats.Append("afterProcessing = ").Append(afterProcessing.ToLongTimeString());
+
+            File.WriteAllText(Path.Combine(nupkgsPath, "stats.txt"),stats.ToString());
+
         }
     }
 }
