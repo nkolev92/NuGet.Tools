@@ -22,16 +22,29 @@ namespace NupkgAnalyzer
 
             var results = analyzer.ExecuteCommands(commands);
 
-            var builder = new StringBuilder(); ;
-            foreach(var dict in results)
+            var values = new List<List<string>>();
+
+            var names = new List<string>() { Constants.ID, Constants.Version, Constants.PS1Scripts, Constants.PPFiles, Constants.ContentFiles, Constants.PS1ScriptsWithNuGetAPIs };
+
+            values.Add(names);
+            foreach (var dict in results)
             {
-                foreach (var kvp in dict)
+                var row = new List<string>();
+                foreach (var key in names)
                 {
-                    builder.Append($"{kvp.Key} => {kvp.Value}; ");
+                    row.Add(dict.GetValueOrDefault(key));
                 }
-                builder.Append("\r\n");
+                values.Add(row);
             }
-            File.WriteAllText(Path.Combine(nupkgsPath,"results.txt"), builder.ToString());
+
+            var csv = new StringBuilder();
+
+            foreach (var row in values)
+            {
+                csv.Append(string.Join(",", row)).Append("\r\n");
+            }
+
+            File.WriteAllText(Path.Combine(nupkgsPath, "results.csv"), csv.ToString());
         }
     }
 }

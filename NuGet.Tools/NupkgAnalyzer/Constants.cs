@@ -2,6 +2,10 @@
 {
     public class Constants
     {
+        public static string ID = "Identity";
+
+        public static string Version = "Version";
+
         public static string PS1Scripts = $".ps1 scripts";
 
         public static string PPFiles = ".pp files";

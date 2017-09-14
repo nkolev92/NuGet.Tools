@@ -52,8 +52,8 @@ namespace NupkgAnalyzer
             foreach (var package in GetAllPackagesInFolder(_nupkgsRootDirectory, _nuGetDirectoryStructure))
             {
                 var commandResults = new Dictionary<string, string>();
-                commandResults.Add("packageId", package.Identity.Id);
-                commandResults.Add("version", package.Identity.Version.ToFullString());
+                commandResults.Add(Constants.ID, package.Identity.Id);
+                commandResults.Add(Constants.Version, package.Identity.Version.ToFullString());
 
                 using (var archive = ZipFile.Open(package.Path, ZipArchiveMode.Read)){
                     foreach (var command in commands)
