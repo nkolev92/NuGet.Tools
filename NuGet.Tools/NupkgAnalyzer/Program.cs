@@ -15,17 +15,20 @@ namespace NupkgAnalyzer
             var analyzer = new PackageAnalyzer(nupkgsPath, NuGetDirectoryStructure.V3, Path.GetTempPath());
 
             var commands = new List<IProcessNupkgCommand>() {
-                new EnumeratePPFilesInPackageCommand(),
-                new EnumeratePS1ScriptsInPackageCommand(),
-                new EnumerateScriptsUsingNuGetAPIsInPackageCommand(@"E:\data"),
-                new EnumerateContentFilesInPackageCommand() };
+//                new EnumeratePPFilesInPackageCommand(),
+//                new EnumeratePS1ScriptsInPackageCommand(),
+//                new EnumerateScriptsUsingNuGetAPIsInPackageCommand(@"E:\data"),
+//                new EnumerateContentFilesInPackageCommand()
+//                new EnumerateXdtFileInPackageCommand(),
+                  new EnumerateInteropDllsInPackageCommand()
+            };
             var beforeRunCommand = new DateTime();
             var results = analyzer.ExecuteCommands(commands);
             var afterRunCommand = new DateTime();
 
             var values = new List<List<string>>();
 
-            var names = new List<string>() { Constants.ID, Constants.Version, Constants.PS1Scripts, Constants.PPFiles, Constants.ContentFiles, Constants.PS1ScriptsWithNuGetAPIs };
+            var names = new List<string>() { Constants.ID, Constants.Version, Constants.InteropFiles};
 
             values.Add(names);
             foreach (var dict in results)
@@ -47,7 +50,7 @@ namespace NupkgAnalyzer
 
             var afterProcessing = new DateTime();
 
-            File.WriteAllText(Path.Combine(nupkgsPath, "results.csv"), csv.ToString());
+            File.WriteAllText(Path.Combine(nupkgsPath, "resultsInterop.csv"), csv.ToString());
 
             var stats = new StringBuilder();
             stats.Append("Before command = ").Append(beforeRunCommand.ToLongTimeString());
