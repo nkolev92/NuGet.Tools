@@ -20,6 +20,7 @@ namespace NupkgAnalyzer
         {
             return Path.Combine(_tempeExtractionPath, Guid.NewGuid().ToString());
         }
+
         public Dictionary<string, string> Execute(ZipArchive archive, LocalPackageInfo localPackage)
         {
 
