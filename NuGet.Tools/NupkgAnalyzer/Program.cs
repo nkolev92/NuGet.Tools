@@ -10,9 +10,10 @@ namespace NupkgAnalyzer
     {
         static void Main(string[] args)
         {
-            string nupkgsPath = @"C:\Users\Roki2\Documents\Code\Packages";
+            string nupkgsPath = @"E:\UniquePackages";
+            string outputPath = @"E:\Results";
 
-            var analyzer = new PackageAnalyzer(nupkgsPath, NuGetDirectoryStructure.V2, Path.GetTempPath());
+            var analyzer = new PackageAnalyzer(nupkgsPath, NuGetDirectoryStructure.V3, Path.GetTempPath());
 
             var commands = new List<IProcessNupkgCommand>() {
 //                new EnumeratePPFilesInPackageCommand(),
@@ -20,15 +21,16 @@ namespace NupkgAnalyzer
 //                new EnumerateScriptsUsingNuGetAPIsInPackageCommand(@"E:\data"),
 //                new EnumerateContentFilesInPackageCommand()
 //                new EnumerateXdtFileInPackageCommand(),
-                  new EnumerateInteropDllsInPackageCommand(@"C:\Users\Roki2\Documents\Code\Data")
+//                  new EnumerateInteropDllsInPackageCommand(@"E:\data"),
+                  new EnumerateTargetsFileInPackageCommand()
             };
-            var beforeRunCommand = new DateTime();
+            var beforeRunCommand = DateTime.Now;
             var results = analyzer.ExecuteCommands(commands);
-            var afterRunCommand = new DateTime();
+            var afterRunCommand = DateTime.Now;
 
             var values = new List<List<string>>();
 
-            var names = new List<string>() { Constants.ID, Constants.Version, Constants.InteropFiles};
+            var names = new List<string>() { Constants.ID, Constants.Version, Constants.TargetFiles };
 
             values.Add(names);
             foreach (var dict in results)
@@ -36,7 +38,9 @@ namespace NupkgAnalyzer
                 var row = new List<string>();
                 foreach (var key in names)
                 {
-                    row.Add(dict.GetValueOrDefault(key));
+                    string value;
+                    dict.TryGetValue(key, out value);
+                    row.Add(value);
                 }
                 values.Add(row);
             }
@@ -48,16 +52,16 @@ namespace NupkgAnalyzer
                 csv.Append(string.Join(",", row)).Append("\r\n");
             }
 
-            var afterProcessing = new DateTime();
+            var afterProcessing = DateTime.Now;
 
-            File.WriteAllText(Path.Combine(nupkgsPath, "resultsInterop.csv"), csv.ToString());
+            File.WriteAllText(Path.Combine(outputPath, "PackagesWithTargets.csv"), csv.ToString());
 
             var stats = new StringBuilder();
             stats.Append("Before command = ").Append(beforeRunCommand.ToLongTimeString());
             stats.Append("After command = ").Append(afterRunCommand.ToLongTimeString());
-            stats.Append("afterProcessing = ").Append(afterProcessing.ToLongTimeString());
+            stats.Append("After Processing = ").Append(afterProcessing.ToLongTimeString());
 
-            File.WriteAllText(Path.Combine(nupkgsPath, "stats.txt"),stats.ToString());
+            File.WriteAllText(Path.Combine(outputPath, "stats.txt"),stats.ToString());
 
         }
     }

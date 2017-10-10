@@ -14,6 +14,8 @@ namespace NupkgAnalyzer
     {
         private string _tempeExtractionPath;
 
+        private List<string> interopDlls = new List<string>();
+        private List<string> allDlls = new List<string>();
         public EnumerateInteropDllsInPackageCommand(string tempExtractionPath)
         {
             _tempeExtractionPath = tempExtractionPath;
@@ -29,16 +31,37 @@ namespace NupkgAnalyzer
             var results = new Dictionary<string, string>(); ;
 
             var interopFiles = new List<string>();
+
             foreach (var entry in archive.Entries)
             {
                 if (entry.FullName.EndsWith("dll", StringComparison.OrdinalIgnoreCase) || entry.FullName.EndsWith("exe", StringComparison.OrdinalIgnoreCase))
                 {
-                    var path = GetRandomPath();
-                    entry.ExtractToFile(path, true);
-                    var assembly = Assembly.LoadFrom(path);  // ReflectionOnly load is not available everywhere
-                    if (IsCOMAssembly(assembly))
+                    if (!allDlls.Contains(entry.Name))
                     {
-                        interopFiles.Add(entry.ToString());
+                        allDlls.Add(entry.Name);
+                        var path = GetRandomPath();
+                        entry.ExtractToFile(path, true);
+                        var newDomain4Process = AppDomain.CreateDomain("newDomain4Process");
+                        newDomain4Process.ExecuteAssembly(path);
+                        var assembly = newDomain4Process.GetAssemblies()[0];
+                        if (IsCOMAssembly(assembly))
+                        {
+                            interopDlls.Add(entry.Name);
+                            interopFiles.Add(entry.ToString());
+                        }
+                       
+                        if (newDomain4Process != null) { 
+                            AppDomain.Unload(newDomain4Process);
+                        }
+
+
+                    }
+                    else
+                    {
+                        if (interopDlls.Contains(entry.Name))
+                        {
+                            interopFiles.Add(entry.ToString());
+                        }
                     }
                 }
             }
@@ -48,10 +71,17 @@ namespace NupkgAnalyzer
 
         private static bool IsCOMAssembly(Assembly a)
         {
-            object[] AsmAttributes = a.GetCustomAttributes(typeof(ImportedFromTypeLibAttribute), true);
-            if (AsmAttributes.Length > 0)
+            try
             {
-                return true;
+                object[] AsmAttributes = a.GetCustomAttributes(typeof(ImportedFromTypeLibAttribute), true);
+                if (AsmAttributes.Length > 0)
+                {
+                    return true;
+                }
+            }
+            catch (FileNotFoundException e)
+            {
+                return false;
             }
             return false;
         }

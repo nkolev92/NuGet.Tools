@@ -17,5 +17,8 @@
         public static string InteropFiles = "Interop files";
 
         public static string PS1ScriptsWithNuGetAPIs = ".ps1 scripts containing NuGet APIs";
+
+        public static string TargetFiles = "Target Files";
+
     }
 }
