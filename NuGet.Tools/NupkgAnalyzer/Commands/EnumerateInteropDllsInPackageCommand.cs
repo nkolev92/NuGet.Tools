@@ -41,20 +41,17 @@ namespace NupkgAnalyzer
                         allDlls.Add(entry.Name);
                         var path = GetRandomPath();
                         entry.ExtractToFile(path, true);
-                        var newDomain4Process = AppDomain.CreateDomain("newDomain4Process");
-                        newDomain4Process.ExecuteAssembly(path);
-                        var assembly = newDomain4Process.GetAssemblies()[0];
+
+                        AppDomain myDomain = AppDomain.CreateDomain("MyDomain");
+                        byte[] data = System.IO.File.ReadAllBytes(path);
+                        Assembly assembly = myDomain.Load(data);
+
                         if (IsCOMAssembly(assembly))
                         {
                             interopDlls.Add(entry.Name);
                             interopFiles.Add(entry.ToString());
                         }
-                       
-                        if (newDomain4Process != null) { 
-                            AppDomain.Unload(newDomain4Process);
-                        }
-
-
+                        AppDomain.Unload(myDomain);
                     }
                     else
                     {

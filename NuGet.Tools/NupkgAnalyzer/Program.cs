@@ -10,10 +10,10 @@ namespace NupkgAnalyzer
     {
         static void Main(string[] args)
         {
-            string nupkgsPath = @"E:\UniquePackages";
-            string outputPath = @"E:\Results";
+            string nupkgsPath = @"C:\Users\Roki2\Documents\Code\Packages";
+            string outputPath = @"C:\Users\Roki2\Documents\Code\Packages";
 
-            var analyzer = new PackageAnalyzer(nupkgsPath, NuGetDirectoryStructure.V3, Path.GetTempPath());
+            var analyzer = new PackageAnalyzer(nupkgsPath, NuGetDirectoryStructure.V2, Path.GetTempPath());
 
             var commands = new List<IProcessNupkgCommand>() {
 //                new EnumeratePPFilesInPackageCommand(),
@@ -21,8 +21,8 @@ namespace NupkgAnalyzer
 //                new EnumerateScriptsUsingNuGetAPIsInPackageCommand(@"E:\data"),
 //                new EnumerateContentFilesInPackageCommand()
 //                new EnumerateXdtFileInPackageCommand(),
-//                  new EnumerateInteropDllsInPackageCommand(@"E:\data"),
-                  new EnumerateTargetsFileInPackageCommand()
+                  new EnumerateInteropDllsInPackageCommand( @"C:\Users\Roki2\Documents\Code\Data"),
+//                  new EnumerateTargetsFileInPackageCommand()
             };
             var beforeRunCommand = DateTime.Now;
             var results = analyzer.ExecuteCommands(commands);
