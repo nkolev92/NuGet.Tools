@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>GlobalToolsPackage</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(ToolTargetFramework)</TargetFramework>
+    <PackageType>DotnetTool</PackageType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <Description>Test NuGet Global Tools package that contains NuGet.exe as the "tool"</Description>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ToolTargetFramework Condition=" '$(ToolTargetFramework)' == '' ">$(TargetFramework)</ToolTargetFramework>
+    <ToolRuntimeIdentifier Condition=" '$(ToolRuntimeIdentifier)' == '' ">$(RuntimeIdentifier)</ToolRuntimeIdentifier>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Include="nuget-4.4.0.exe">
+      <PackagePath>tools/$(ToolTargetFramework)/$(ToolRuntimeIdentifier)</PackagePath>
+      <Pack>true</Pack>
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>
+  
+</Project>
