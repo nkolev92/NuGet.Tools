@@ -4,13 +4,13 @@
     <PackageId>GlobalToolsPackage</PackageId>
     <PackageVersion>1.0.0</PackageVersion>
     <OutputType>Exe</OutputType>
-    <TargetFramework>$(ToolTargetFramework)</TargetFramework>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
     <PackageType>DotnetTool</PackageType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <Description>Test NuGet Global Tools package that contains NuGet.exe as the "tool"</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <ToolTargetFramework Condition=" '$(ToolTargetFramework)' == '' ">$(TargetFramework)</ToolTargetFramework>
+    <ToolTargetFramework>$(TargetFramework)</ToolTargetFramework>
     <ToolRuntimeIdentifier Condition=" '$(ToolRuntimeIdentifier)' == '' ">$(RuntimeIdentifier)</ToolRuntimeIdentifier>
   </PropertyGroup>
   

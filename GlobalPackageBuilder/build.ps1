@@ -1,46 +1,15 @@
 <#
 .SYNOPSIS
-Builds NuGet client solutions and creates output artifacts.
+Builds a bunch of global tools packages.
 
-.PARAMETER Configuration
-Build configuration (debug by default)
+.PARAMETER PackagesPath
+Path where the packages will be output
 
-.PARAMETER ReleaseLabel
-Release label to use for package and assemblies versioning (zlocal by default)
-
-.PARAMETER BuildNumber
-Build number to use for package and assemblies versioning (auto-generated if not provided)
-
-.PARAMETER MSPFXPath
-Path to a code signing certificate for delay-sigining (optional)
-
-.PARAMETER NuGetPFXPath
-Path to a code signing certificate for delay-sigining (optional)
-
-.PARAMETER SkipVS15
-Skips building binaries targeting Visual Studio "15"
-
-.PARAMETER Fast
-Runs minimal incremental build. Skips end-to-end packaging step.
-
-.PARAMETER CI
-Indicates the build script is invoked from CI
+.PARAMETER SkipClean
+Whether to Skip Clean
 
 .EXAMPLE
-.\build.ps1
-To run full clean build, e.g after switching branches
-
-.EXAMPLE
-.\build.ps1 -f
-Fast incremental build
-
-.EXAMPLE
-.\build.ps1 -s15
-To only run unit tests
-
-.EXAMPLE
-.\build.ps1 -v -ea Stop
-To troubleshoot build issues
+.\build.ps1 -PackagesPath .\Packages
 #>
 [CmdletBinding()]
 param (
@@ -68,3 +37,6 @@ msbuild /t:build /restore /p:PackageOutputPath=$PackagesPath /p:PackageId="ToolN
 msbuild /t:build /restore /p:PackageOutputPath=$PackagesPath /p:PackageId="ToolNet46Any" /p:ToolTargetFramework="net46" /p:ToolRuntimeIdentifier="any"
 msbuild /t:build /restore /p:PackageOutputPath=$PackagesPath /p:PackageId="ToolAnyAny" /p:ToolTargetFramework="any" /p:ToolRuntimeIdentifier="any"
 msbuild /t:build /restore /p:PackageOutputPath=$PackagesPath /p:PackageId="Toolnetcore20X64" /p:ToolTargetFramework="netcoreapp2.0" /p:ToolRuntimeIdentifier="win7-x64"
+msbuild /t:build /restore /p:PackageOutputPath=$PackagesPath /p:PackageId="Toolnetcore20X86" /p:ToolTargetFramework="netcoreapp2.0" /p:ToolRuntimeIdentifier="win7-x86"
+msbuild /t:build /restore /p:PackageOutputPath=$PackagesPath /p:PackageId="Toolnetcore10X64" /p:ToolTargetFramework="netcoreapp1.0" /p:ToolRuntimeIdentifier="win7-x64"
+msbuild /t:build /restore /p:PackageOutputPath=$PackagesPath /p:PackageId="Toolnetcore10X86" /p:ToolTargetFramework="netcoreapp1.0" /p:ToolRuntimeIdentifier="win7-x86"
