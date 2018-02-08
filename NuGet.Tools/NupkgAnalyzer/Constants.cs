@@ -20,5 +20,11 @@
 
         public static string TargetFiles = "Target Files";
 
+        public static string PS1ScriptsWithEFAPIs = "PS1 Scripts with EF APIs";
+
+        public static string LibFilePatterns = "Lib file patterns";
+
+        public static string DevelopmentDependency = "Development dependency";
+
     }
 }
