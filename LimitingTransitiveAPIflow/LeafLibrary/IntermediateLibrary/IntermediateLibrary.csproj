@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RestoreAdditionalProjectSources>..\LeafLibrary\bin\Debug</RestoreAdditionalProjectSources>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LeafLibrary" Version="1.0.0" />
+  </ItemGroup>
+</Project>
