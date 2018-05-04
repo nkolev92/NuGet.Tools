@@ -16,9 +16,9 @@ namespace NupkgAnalyzer
             _tempeExtractionPath = tempExtractionPath;
         }
 
-        private string GetRandomPath()
+        private string GetRandomPath(LocalPackageInfo localPackage)
         {
-            return Path.Combine(_tempeExtractionPath, Guid.NewGuid().ToString());
+            return Path.Combine(_tempeExtractionPath, localPackage.Identity.Id + localPackage.Identity.Version.ToNormalizedString() + "-" + Guid.NewGuid().ToString());
         }
 
         public Dictionary<string, string> Execute(ZipArchive archive, LocalPackageInfo localPackage)
@@ -37,19 +37,19 @@ namespace NupkgAnalyzer
 
                 foreach (var scriptFile in ps1Files)
                 {
-                    var path = GetRandomPath();
+                    var path = GetRandomPath(localPackage);
                     scriptFile.ExtractToFile(path, true);
 
-                    using (var stream = scriptFile.Open())
-                    using (var reader = new StreamReader(stream))
-                    {
-                        var scriptFileContent = reader.ReadToEnd();
-                        if (scriptFileContent.Contains("NuGet.VisualStudio.IFileSystemProvider") ||
-                            scriptFileContent.Contains("NuGet.VisualStudio.ISolutionManager"))
-                        {
+                    //using (var stream = scriptFile.Open())
+                    //using (var reader = new StreamReader(stream))
+                    //{
+                    //    var scriptFileContent = reader.ReadToEnd();
+                    //    if (scriptFileContent.Contains("NuGet.VisualStudio.IFileSystemProvider") ||
+                    //        scriptFileContent.Contains("NuGet.VisualStudio.ISolutionManager"))
+                    //    {
                             ps1FilesContainingNuGetAPIs.Add(scriptFile.FullName);
-                        }
-                    }
+                        //}
+                    //}
                 }
             }
 

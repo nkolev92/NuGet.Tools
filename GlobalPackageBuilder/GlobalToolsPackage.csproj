@@ -10,7 +10,7 @@
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <Description>Test NuGet Global Tools package that contains NuGet.exe as the "tool"</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <ToolTargetFramework>$(TargetFramework)</ToolTargetFramework>
+    <ToolTargetFramework Condition=" '$(ToolTargetFramework)' == ''">$(TargetFramework)</ToolTargetFramework>
     <ToolRuntimeIdentifier Condition=" '$(ToolRuntimeIdentifier)' == '' ">$(RuntimeIdentifier)</ToolRuntimeIdentifier>
   </PropertyGroup>
   

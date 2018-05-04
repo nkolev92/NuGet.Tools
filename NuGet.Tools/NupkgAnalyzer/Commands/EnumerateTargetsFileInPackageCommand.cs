@@ -13,7 +13,7 @@ namespace NupkgAnalyzer
         public Dictionary<string, string> Execute(ZipArchive archive, LocalPackageInfo localPackage)
         {
             var targetFiles = archive.Entries
-                              .Where(e => e.FullName.EndsWith(localPackage.Identity.Id + ".targets", StringComparison.OrdinalIgnoreCase));
+                              .Where(e => e.FullName.EndsWith(localPackage.Identity.Id + ".targets", StringComparison.OrdinalIgnoreCase) && e.FullName.StartsWith("build", StringComparison.OrdinalIgnoreCase));
 
             var results = new Dictionary<string, string>(); ;
 

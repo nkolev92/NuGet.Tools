@@ -31,7 +31,7 @@ namespace NupkgAnalyzer
             var results = new Dictionary<string, string>(); ;
 
             var interopFiles = new List<string>();
-
+            var start = DateTime.UtcNow;
             foreach (var entry in archive.Entries)
             {
                 if (entry.FullName.EndsWith("dll", StringComparison.OrdinalIgnoreCase) || entry.FullName.EndsWith("exe", StringComparison.OrdinalIgnoreCase))
@@ -42,16 +42,12 @@ namespace NupkgAnalyzer
                         var path = GetRandomPath();
                         entry.ExtractToFile(path, true);
 
-                        AppDomain myDomain = AppDomain.CreateDomain("MyDomain");
-                        byte[] data = System.IO.File.ReadAllBytes(path);
-                        Assembly assembly = myDomain.Load(data);
-
+                        var assembly = Assembly.LoadFrom(path);
                         if (IsCOMAssembly(assembly))
                         {
                             interopDlls.Add(entry.Name);
                             interopFiles.Add(entry.ToString());
                         }
-                        AppDomain.Unload(myDomain);
                     }
                     else
                     {
@@ -62,6 +58,9 @@ namespace NupkgAnalyzer
                     }
                 }
             }
+            var end = DateTime.UtcNow;
+            interopFiles.Add(start.Millisecond + "");
+            interopFiles.Add(end.Millisecond + "");
             results.Add(Constants.InteropFiles, string.Join(";", interopFiles));
             return results;
         }

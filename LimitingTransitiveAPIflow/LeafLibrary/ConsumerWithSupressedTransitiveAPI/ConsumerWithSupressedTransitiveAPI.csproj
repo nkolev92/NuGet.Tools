@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RestoreAdditionalProjectSources>..\IntermediateLibrary\bin\Debug</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="IntermediateLibrary" Version="1.0.0" />
+    <PackageReference Include="LeafLibrary" Version="1.0.0" PrivateAssets="All" ExcludeAssets="compile" />
+  </ItemGroup>
+
+</Project>
