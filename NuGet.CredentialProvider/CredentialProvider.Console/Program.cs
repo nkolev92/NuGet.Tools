@@ -23,10 +23,11 @@ namespace CredentialProvider
                 eventArgs.Cancel = true;
             };
 
+            var pluginToClient = new PluginToClientRequestHandler();
 
             IRequestHandlers requestHandlers = new RequestHandlerCollection
             {
-                { MessageMethod.GetAuthenticationCredentials, new GetAuthenticationCredentialsRequestHandler(Logger) },
+                { MessageMethod.GetAuthenticationCredentials, new GetAuthenticationCredentialsRequestHandler(Logger, pluginToClient) },
                 { MessageMethod.GetOperationClaims, new GetOperationClaimsRequestHandler(Logger) },
                 { MessageMethod.Initialize, new InitializeRequestHandler(Logger) },
             };
@@ -35,9 +36,9 @@ namespace CredentialProvider
             {
                 using (IPlugin plugin = await PluginFactory.CreateFromCurrentProcessAsync(requestHandlers, ConnectionOptions.CreateDefault(), tokenSource.Token).ConfigureAwait(continueOnCapturedContext: false))
                 {
+                    pluginToClient.Connection = plugin.Connection;
                     await RunNuGetPluginsAsync(plugin, Logger, tokenSource.Token).ConfigureAwait(continueOnCapturedContext: false);
                 }
-
                 return 0;
             }
 
