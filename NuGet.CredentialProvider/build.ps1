@@ -1,7 +1,7 @@
 Write-Host Cleaning obj and bin directories
 msbuild /t:clean /v:q 
 Write-Host Cleaning the provider directory
-rm -r artifacts
+Remove-Item artifacts -Force -Recurse 
 
 Write-Host Building assemblies
 msbuild /restore /v:m
