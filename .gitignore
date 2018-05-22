@@ -1,6 +1,7 @@
 # NuGet Files
 *.nuget.targets
 *.nuget.props
+GlobalPackagesFolder/
 
 # Project K
 project.lock.json

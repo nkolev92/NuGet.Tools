@@ -26,5 +26,10 @@
 
         public static string DevelopmentDependency = "Development dependency";
 
+        public static string LongestPathInNupkg = "Longest path in nupkg";
+
+        public static string PackageTypes = "Package Types";
+
+
     }
 }

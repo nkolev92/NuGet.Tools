@@ -11,7 +11,7 @@ namespace NupkgAnalyzer
         static void Main(string[] args)
         {
             string nupkgsPath = @"E:\UniquePackages";
-            string outputPath = @"E:\Results";
+            string outputPath = @"E:\Results  - PC2PR";
 
             var analyzer = new PackageAnalyzer(nupkgsPath, NuGetDirectoryStructure.V3, Path.GetTempPath());
 
@@ -24,7 +24,8 @@ namespace NupkgAnalyzer
 //                new EnumerateInteropDllsInPackageCommand( @"E:\Data"),
 //                new EnumerateTargetsFileInPackageCommand(),
 //                new EnumerateLibFilePatternsInPackageCommand(),
-                  new EnumeratePackagesWithDevelopmentDependencyFlagCommand()
+//                new EnumeratePackagesWithDevelopmentDependencyFlagCommand()
+                  new EnumerateLongestPathOfFilesInPackageCommand()
             };
             var beforeRunCommand = DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff");
             var results = analyzer.ExecuteCommands(commands);
@@ -32,7 +33,7 @@ namespace NupkgAnalyzer
 
             var values = new List<List<string>>();
 
-            var names = new List<string>() { Constants.ID, Constants.Version, Constants.DevelopmentDependency };
+            var names = new List<string>() { Constants.ID, Constants.Version, Constants.LongestPathInNupkg, Constants.PackageTypes };
 
             values.Add(names);
             foreach (var dict in results)
@@ -56,14 +57,14 @@ namespace NupkgAnalyzer
 
             var afterProcessing = DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff");
 
-            File.WriteAllText(Path.Combine(outputPath, "packagesWithDevelopmentDependencyFlag.csv"), csv.ToString());
+            File.WriteAllText(Path.Combine(outputPath, "LongestPath.csv"), csv.ToString());
 
             var stats = new StringBuilder();
             stats.Append("Before command = ").Append(beforeRunCommand);
             stats.Append("After command = ").Append(afterRunCommand);
             stats.Append("After Processing = ").Append(afterProcessing);
 
-            File.WriteAllText(Path.Combine(outputPath, "stats.txt"),stats.ToString());
+            File.WriteAllText(Path.Combine(outputPath, "stats.txt"), stats.ToString());
 
         }
     }
