@@ -33,7 +33,7 @@ namespace AuthenticodeVerifier
 
             return false;
         }
-
+        // Reference for the reason codes: https://github.com/mono/mono/blob/master/mcs/class/Mono.Security/Mono.Security.Authenticode/AuthenticodeDeformatter.cs
         private void LogReason(Type type, object instance)
         {
             var myField = type.GetProperty("Reason");
