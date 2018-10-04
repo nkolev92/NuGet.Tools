@@ -7,12 +7,19 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Window.Resources>
-        <DataTemplate DataType="{x:Type local:Link}">
-            <TextBlock><Hyperlink NavigateUri="{Binding FirstName}" >
-                <Run Text="{Binding LastName}"></Run>
-            </Hyperlink></TextBlock>
+        <DataTemplate DataType="{x:Type local:LicenseText}">
+            <TextBlock
+                AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
+                AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}"
+                >
+                <Hyperlink 
+                    AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
+                    NavigateUri="{Binding Link}">
+                <Run Text="{Binding Text}"></Run>
+                </Hyperlink>
+            </TextBlock>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type local:NonLink}">
+        <DataTemplate DataType="{x:Type local:FreeText}">
             <TextBlock Text="{Binding Text}" />
         </DataTemplate>
 
@@ -22,7 +29,7 @@
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <ItemsControl Name="IC" Grid.Row="1" Hyperlink.RequestNavigate="IC_RequestNavigate">
+        <ItemsControl ItemsSource="{Binding}" Grid.Row="1" Hyperlink.RequestNavigate="OnViewLicenseTermsRequestNavigate">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel Orientation="Horizontal" />
