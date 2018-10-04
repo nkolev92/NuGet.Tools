@@ -13,6 +13,7 @@
                 AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}"
                 >
                 <Hyperlink 
+                    RequestNavigate="OnViewLicenseTermsRequestNavigate"
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
                     NavigateUri="{Binding Link}">
                 <Run Text="{Binding Text}"></Run>
@@ -29,7 +30,7 @@
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <ItemsControl ItemsSource="{Binding}" Grid.Row="1" Hyperlink.RequestNavigate="OnViewLicenseTermsRequestNavigate">
+        <ItemsControl ItemsSource="{Binding}" Grid.Row="1">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel Orientation="Horizontal" />
