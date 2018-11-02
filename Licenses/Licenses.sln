@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PackageLicenseFileApache", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleNonStandardLicense", "SimpleNonStandardLicense\SimpleNonStandardLicense.csproj", "{58AC684B-9AEF-42E5-8DB4-C5ECF14A6CEE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unlicensed", "Unlicensed\Unlicensed.csproj", "{E58E4057-C6DA-47EA-8E11-6994DB4C8DB1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{58AC684B-9AEF-42E5-8DB4-C5ECF14A6CEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58AC684B-9AEF-42E5-8DB4-C5ECF14A6CEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58AC684B-9AEF-42E5-8DB4-C5ECF14A6CEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E58E4057-C6DA-47EA-8E11-6994DB4C8DB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E58E4057-C6DA-47EA-8E11-6994DB4C8DB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E58E4057-C6DA-47EA-8E11-6994DB4C8DB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E58E4057-C6DA-47EA-8E11-6994DB4C8DB1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

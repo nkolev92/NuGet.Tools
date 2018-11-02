@@ -1,12 +1,12 @@
 <Project>
   <PropertyGroup>
     <RestorePackagesPath>..\globalPackagesFolder</RestorePackagesPath>
-    <RestoreSources>C:\Users\Roki2\Documents\Code\NuGet\NuGet.Client\artifacts\nupkgs</RestoreSources>
-    <PackageOutputPath>C:\Users\Roki2\Source\Repos\Licenses\LicenseNupkgs</PackageOutputPath>
+    <RestoreSources>F:\NuGet.Client\artifacts\nupkgs;https://api.nuget.org/v3/index.json</RestoreSources>
+    <PackageOutputPath>..\LicenseNupkgs</PackageOutputPath>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.0.0-*" PrivateAssets="all" />
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.9.0-*" PrivateAssets="all" />
   </ItemGroup>
 </Project>

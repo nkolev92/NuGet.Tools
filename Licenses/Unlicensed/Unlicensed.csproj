@@ -2,11 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
+    <PackageLicenseExpression>UNLICENSED</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SimpleLicense\SimpleLicense.csproj" />
+    <ProjectReference Include="..\ComplexWithNonStandardLicense\ComplexWithNonStandardLicense.csproj" />
   </ItemGroup>
-
 </Project>

@@ -6,6 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ComplexWithUnusualLicense\ComplexWithUnusualLicense.csproj" />
+    <ProjectReference Include="..\ComplexWithNonStandardLicense\ComplexWithNonStandardLicense.csproj" />
   </ItemGroup>
 </Project>
