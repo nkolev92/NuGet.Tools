@@ -1,0 +1,88 @@
+﻿<Window x:Class="WpfApp1.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp1"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Window.Resources>
+
+
+        <DataTemplate DataType="{x:Type local:LicenseText}">
+            <TextBlock>
+                <Hyperlink 
+                    RequestNavigate="OnViewLicenseTermsRequestNavigate"
+                    NavigateUri="{Binding Link}">
+                    <Run Text="{Binding Text}"></Run>
+                </Hyperlink>
+            </TextBlock>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type local:FreeText}">
+            <TextBlock Text="{Binding Text}" />
+        </DataTemplate>
+        
+        <DataTemplate x:Key="PackageItemTemplate">
+            <StackPanel Margin="2,0,2,5">
+                <TextBlock
+                    TextWrapping="Wrap"
+                    x:Name="_packageLicenseText"
+                    AutomationProperties.Name="{Binding Text}">
+                            <Run
+                      Text="{Binding Id, Mode=OneTime}" FontWeight="Bold" />
+                            <Run
+                      Text=" " />
+                            <Run
+                      Text="Authors" FontWeight="Light" />
+                            <Run
+                      Text="{Binding Authors, Mode=OneTime}" FontWeight="Bold" />
+                </TextBlock>
+
+                <ItemsControl ItemsSource="{Binding License}" Grid.Row="1">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </StackPanel>
+        </DataTemplate>
+
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition
+        Height="Auto" />
+            <RowDefinition
+        Height="Auto" />
+            <RowDefinition />
+            <RowDefinition
+        Height="Auto" />
+            <RowDefinition
+        Height="Auto" />
+        </Grid.RowDefinitions>
+        <ItemsControl
+          Grid.Row="2"
+          Margin="12,8"
+          MinHeight="130"
+          IsTabStop="False"
+          ItemsSource="{Binding}"
+          ItemTemplate="{StaticResource PackageItemTemplate}">
+            <ItemsControl.Template>
+                <ControlTemplate
+              TargetType="{x:Type ItemsControl}">
+                    <Border
+                BorderThickness="1">
+                        <ScrollViewer
+                  Padding="3"
+                  CanContentScroll="True"
+                  VerticalScrollBarVisibility="Visible">
+                            <ItemsPresenter></ItemsPresenter>
+                        </ScrollViewer>
+                    </Border>
+                </ControlTemplate>
+            </ItemsControl.Template>
+        </ItemsControl>
+    </Grid>
+</Window>
