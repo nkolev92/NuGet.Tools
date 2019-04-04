@@ -1,12 +1,12 @@
 <Project>
   <PropertyGroup>
     <RestorePackagesPath>..\globalPackagesFolder</RestorePackagesPath>
-    <RestoreSources>F:\NuGet.Client\artifacts\nupkgs;https://api.nuget.org/v3/index.json</RestoreSources>
+    <RestoreSources>https://api.nuget.org/v3/index.json</RestoreSources>
     <PackageOutputPath>..\LicenseNupkgs</PackageOutputPath>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
-  <!-- <ItemGroup>
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.0.0-*" PrivateAssets="all" />
-  </ItemGroup> -->
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.json" Version="10.0.3" />
+  </ItemGroup>
 </Project>

@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
-    <PackageLicenseFile>License.txt</PackageLicenseFile>
+    <PackageLicenseFile>License</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="License.txt" Pack="true" PackagePath="$(PackageLicenseFile)"/>
+    <None Include="License" Pack="true" PackagePath=""/>
   </ItemGroup>
   
 </Project>
