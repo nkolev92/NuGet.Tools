@@ -6,6 +6,34 @@ Set-Location F:\NuGet.Client
 $nugetClientRoot = "F:\NuGet.Client"
 $cliRoot = "F:\Forks\cli"
 
+Function Invoke-NuGetTargetsCustom()
+{
+	$restoreDllPath = Join-Path $nugetClientRoot "artifacts\NuGet.Build.Tasks\16.0\bin\Debug\net472\NuGet.Build.Tasks.dll"
+	$nugetRestoreTargetsPath = Join-Path $nugetClientRoot "src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets"
+	Write-Host "msbuild /p:NuGetRestoreTargets=$nugetRestoreTargetsPath /p:RestoreTaskAssemblyFile=$restoreDllPath $($args[0..$args.Count])" 
+	& msbuild /p:NuGetRestoreTargets=$nugetRestoreTargetsPath /p:RestoreTaskAssemblyFile=$restoreDllPath $args[0..$args.Count]
+} 
+
+Function Invoke-PackTargetsCustom()
+{
+	$packDllPath = Join-Path $nugetClientRoot "artifacts\NuGet.Build.Tasks.Pack\16.0\bin\Debug\net472\NuGet.Build.Tasks.Pack.dll"
+	$packTargetsPath = Join-Path $nugetClientRoot "src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.targets"
+	Write-Host "msbuild /p:NuGetBuildTasksPackTargets=$packTargetsPath /p:ImportNuGetBuildTasksPackTargetsFromSdk="true" /p:NuGetPackTaskAssemblyFile=$packDllPath $($args[0..$args.Count])" 
+	& msbuild /p:NuGetBuildTasksPackTargets=$packTargetsPath /p:ImportNuGetBuildTasksPackTargetsFromSdk="true" /p:NuGetPackTaskAssemblyFile=$packDllPath $args[0..$args.Count]
+}
+
+Function Invoke-NuGetCustom()
+{
+	$packDllPath = Join-Path $nugetClientRoot "artifacts\NuGet.Build.Tasks.Pack\16.0\bin\Debug\net472\NuGet.Build.Tasks.Pack.dll"
+	$packTargetsPath = Join-Path $nugetClientRoot "src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.targets"
+	
+	$restoreDllPath = Join-Path $nugetClientRoot "artifacts\NuGet.Build.Tasks\16.0\bin\Debug\net472\NuGet.Build.Tasks.dll"
+	$nugetRestoreTargetsPath = Join-Path $nugetClientRoot "src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets"
+
+	Write-Host "msbuild /p:NuGetRestoreTargets=$nugetRestoreTargetsPath /p:RestoreTaskAssemblyFile=$restoreDllPath /p:NuGetBuildTasksPackTargets=$packTargetsPath /p:ImportNuGetBuildTasksPackTargetsFromSdk="true" /p:NuGetPackTaskAssemblyFile=$packDllPath $($args[0..$args.Count])" 
+	& msbuild /p:NuGetRestoreTargets=$nugetRestoreTargetsPath /p:RestoreTaskAssemblyFile=$restoreDllPath /p:NuGetBuildTasksPackTargets=$packTargetsPath /p:ImportNuGetBuildTasksPackTargetsFromSdk="true" /p:NuGetPackTaskAssemblyFile=$packDllPath $args[0..$args.Count]
+}
+
 Function Run-NuGetTargetsCustom() {
     $projectPath = $args[0]
     $target = $args[1]
