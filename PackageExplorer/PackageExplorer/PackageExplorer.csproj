@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Knapcode.MiniZip" Version="0.8.0" />
+    <PackageReference Include="NuGet.CatalogReader" Version="1.6.12" />
     <PackageReference Include="NuGet.Protocol" Version="5.1.0" />
   </ItemGroup>
 

@@ -34,7 +34,7 @@ namespace PackageExplorer
             {
                 if (packageIdentity == null)
                 {
-                    packageIdentity = new Lazy<PackageIdentity>(new PackageIdentity(PackageId, NuGetVersion.Parse(PackageVersion)));
+                    packageIdentity = new Lazy<PackageIdentity>(() => new PackageIdentity(PackageId, NuGetVersion.Parse(PackageVersion)));
                 }
                 return packageIdentity?.Value;
             }

@@ -1,4 +1,5 @@
 ﻿using Knapcode.MiniZip;
+using NuGet.CatalogReader;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace PackageExplorer
@@ -23,19 +25,36 @@ namespace PackageExplorer
 
             var packageId = "Newtonsoft.Json";
             var packageVersion = "10.0.3";
-
+            //bool beDone = false; // TODO NK - This is crazy slow. Think of an alternative approach. Consider walking bit by bit. 
+            //using (var catalog = new CatalogReader(new Uri(NuGetConstants.V3FeedUrl)))
+            //{
+            //    foreach (var entry in await catalog.GetFlattenedEntriesAsync(workDay, DateTimeOffset.Now))
+            //    {
+            //        Console.WriteLine($"[{entry.CommitTimeStamp}] {entry.Id} {entry.Version}");
+            //        if (beDone)
+            //        {
+            //            throw new Exception();
+            //        }
+            //        beDone = true;
+            //    }
+            //}
 
             var packageInfo = await packageInfoFactory.CreatePackageInfo(packageId, packageVersion);
-
+            // Use nuspecUri to get the nuspec. packageInfo.NuspecUri 
             using (var httpClient = new HttpClient())
             {
-                VersionFolderPathResolver versionFolderPathResolver = new VersionFolderPathResolver(@"F:\MZipDownloads");
+                VersionFolderPathResolver versionFolderPathResolver = new VersionFolderPathResolver(
+                    Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "downloads"));
                 var httpZipProvider = new HttpZipProvider(httpClient);
                 var packagePath = Path.Combine(versionFolderPathResolver.GetInstallPath(packageId, packageVersion), "package.mzip");
                 if (await PackagePersistenceUtility.StorePackageOnDiskAsync(httpZipProvider, packageInfo.ContentUri, packagePath))
                 {
-                    await PackagePersistenceUtility.ReadPackageFromDisk(packagePath);
+                    var zip = await PackagePersistenceUtility.ReadPackageFromDisk(packagePath);
 
+                    foreach (var entry in zip.Entries.Select(e => e.GetName()))
+                    {
+                        Console.WriteLine(entry);
+                    }
                 }
                 else
                 {

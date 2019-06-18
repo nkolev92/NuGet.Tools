@@ -10,7 +10,6 @@ namespace PackageExplorer
     {
         private SourceRepository _sourceRepository;
         private Uri _packageBaseAddress;
-        private RegistrationResourceV3 _registrationResourceV3;
 
         private int _initialized;
 
@@ -23,7 +22,7 @@ namespace PackageExplorer
         public async Task<PackageInfo> CreatePackageInfo(string id, string version)
         {
             await EnsureInitializedAsync();
-            return new PackageInfo(id, version, "randomPath", new Uri(GetFlatContainerNupkgUri(id, version)), _registrationResourceV3.GetUri(id, version));
+            return new PackageInfo(id, version, "randomPath", new Uri(GetFlatContainerNupkgUri(id, version)), new Uri(GetFlatContainerNuspecUri(id, version)));
         }
 
         public async Task EnsureInitializedAsync()
@@ -32,13 +31,17 @@ namespace PackageExplorer
             {
                 var serviceIndexResource = await _sourceRepository.GetResourceAsync<ServiceIndexResourceV3>(CancellationToken.None);
                 _packageBaseAddress = serviceIndexResource.GetServiceEntryUri(ServiceTypes.PackageBaseAddress);
-                _registrationResourceV3 = await _sourceRepository.GetResourceAsync<RegistrationResourceV3>(CancellationToken.None);
             }
         }
 
         internal string GetFlatContainerNupkgUri(string id, string version)
         {
-            return _packageBaseAddress + id.ToLowerInvariant() + "/" + version + "/" + id.ToLowerInvariant() + "." + version + ".nupkg";
+            return _packageBaseAddress + id.ToLowerInvariant() + "/" + version.ToLowerInvariant() + "/" + id.ToLowerInvariant() + "." + version.ToLowerInvariant() + ".nupkg";
+        }
+
+        internal string GetFlatContainerNuspecUri(string id, string version)
+        {
+            return _packageBaseAddress + id.ToLowerInvariant() + "/" + version.ToLowerInvariant() + "/" + id.ToLowerInvariant() + ".nuspec";
         }
     }
 }
