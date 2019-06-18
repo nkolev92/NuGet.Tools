@@ -28,7 +28,7 @@ namespace PackageExplorer
                 downloadLocation = args[0];
             }
 
-            using (var loggerFactory = new LoggerFactory().AddConsole(LogLevel.Warning))
+            using (var loggerFactory = new LoggerFactory().AddConsole(LogLevel.Information))
             using (var httpClient = new HttpClient())
             {
                 var logger = loggerFactory.CreateLogger<Program>();
@@ -44,7 +44,7 @@ namespace PackageExplorer
                 var leafProcessor = new CatalogLeafProcessor(factory, packagePersistenceUtility, loggerFactory.CreateLogger<CatalogLeafProcessor>());
                 var settings = new CatalogProcessorSettings
                 {
-                    DefaultMinCommitTimestamp = DateTimeOffset.UtcNow.AddHours(-1),
+                    MinCommitTimestamp = DateTimeOffset.UtcNow.AddDays(-180),
                     ExcludeRedundantLeaves = false,
                 };
 

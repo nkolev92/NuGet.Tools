@@ -24,7 +24,7 @@ namespace PackageExplorer
 
         public Task<bool> ProcessPackageDeleteAsync(PackageDeleteCatalogLeaf leaf)
         {
-            _logger.LogDebug(
+            _logger.LogInformation(
                 $"{leaf.CommitTimestamp:O}: Found package delete leaf for {leaf.PackageId} {leaf.PackageVersion}.");
 
             return GetResultAsync(leaf);
@@ -32,7 +32,7 @@ namespace PackageExplorer
 
         public Task<bool> ProcessPackageDetailsAsync(PackageDetailsCatalogLeaf leaf)
         {
-            _logger.LogDebug(
+            _logger.LogInformation(
                 $"{leaf.CommitTimestamp:O}: Found package details leaf for {leaf.PackageId} {leaf.PackageVersion}.");
 
             return GetResultAsync(leaf);
