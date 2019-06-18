@@ -7,8 +7,10 @@
 
   <ItemGroup>
     <PackageReference Include="Knapcode.MiniZip" Version="0.8.0" />
-    <PackageReference Include="NuGet.CatalogReader" Version="1.6.12" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
     <PackageReference Include="NuGet.Protocol" Version="5.1.0" />
+    <PackageReference Include="NuGet.Packaging.Core" Version="5.1.0" />
+    <PackageReference Include="NuGet.Protocol.Catalog" Version="4.1.0-dev-2777925" />
   </ItemGroup>
 
 </Project>

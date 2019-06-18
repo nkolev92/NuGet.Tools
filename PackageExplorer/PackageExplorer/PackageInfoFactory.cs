@@ -1,6 +1,8 @@
-﻿using NuGet.Protocol;
+﻿using NuGet.Packaging;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,19 +12,19 @@ namespace PackageExplorer
     {
         private SourceRepository _sourceRepository;
         private Uri _packageBaseAddress;
-
+        private VersionFolderPathResolver _versionFolderPathResolver;
         private int _initialized;
 
-
-        public PackageInfoFactory(SourceRepository sourceRepository)
+        public PackageInfoFactory(SourceRepository sourceRepository, VersionFolderPathResolver versionFolderPathResolver)
         {
             _sourceRepository = sourceRepository;
+            _versionFolderPathResolver = versionFolderPathResolver;
         }
 
         public async Task<PackageInfo> CreatePackageInfo(string id, string version)
         {
             await EnsureInitializedAsync();
-            return new PackageInfo(id, version, "randomPath", new Uri(GetFlatContainerNupkgUri(id, version)), new Uri(GetFlatContainerNuspecUri(id, version)));
+            return new PackageInfo(id, version, _versionFolderPathResolver.GetInstallPath(id, version), new Uri(GetFlatContainerNupkgUri(id, version)), new Uri(GetFlatContainerNuspecUri(id, version)));
         }
 
         public async Task EnsureInitializedAsync()
