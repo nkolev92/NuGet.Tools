@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace PackageExplorer
 {
-    class CatalogLeafProcessor : ICatalogLeafProcessor
+    class FileSystemCatalogLeafProcessor : ICatalogLeafProcessor
     {
-        private readonly ILogger<CatalogLeafProcessor> _logger;
+        private readonly ILogger<FileSystemCatalogLeafProcessor> _logger;
         private readonly PackageInfoFactory _packageInfoFactory;
         private static HttpClient httpClient = new HttpClient();
         private readonly PackagePersistenceUtility _packagePersistenceUtility;
-        public CatalogLeafProcessor(PackageInfoFactory packageInfoFactory, PackagePersistenceUtility packagePersistenceUtility, ILogger<CatalogLeafProcessor> logger)
+        public FileSystemCatalogLeafProcessor(PackageInfoFactory packageInfoFactory, PackagePersistenceUtility packagePersistenceUtility, ILogger<FileSystemCatalogLeafProcessor> logger)
         {
 
             _packageInfoFactory = packageInfoFactory ?? throw new ArgumentNullException(nameof(packageInfoFactory));

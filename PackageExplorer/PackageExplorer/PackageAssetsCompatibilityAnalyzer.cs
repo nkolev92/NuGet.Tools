@@ -26,6 +26,8 @@ namespace PackageExplorer
                 var collection = new ContentItemCollection();
                 collection.Load(fileList);
 
+                analyzedPackage.AllFiles = fileList;
+
                 var libItems = GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies);
                 analyzedPackage.LibFrameworks = GetGroupFrameworks(libItems);
                 analyzedPackage.LibFiles = GetGroupFiles(libItems);
@@ -64,12 +66,13 @@ namespace PackageExplorer
 
         private static IEnumerable<string> GetGroupFiles(IEnumerable<ContentItemGroup> groups)
         {
-            return groups.Select(e => ((NuGetFramework)e.Properties["tfm"]).GetShortFolderName()).OrderBy(e => e);
+            return groups.SelectMany(e => e.Items).Select(e => e.Path).OrderBy(e => e);
+
         }
 
         private static IEnumerable<string> GetGroupFrameworks(IEnumerable<ContentItemGroup> groups)
         {
-            return groups.SelectMany(e => e.Items).Select(e => e.Path).OrderBy(e => e);
+            return groups.Select(e => ((NuGetFramework)e.Properties["tfm"]).GetShortFolderName()).OrderBy(e => e);
         }
     }
 }

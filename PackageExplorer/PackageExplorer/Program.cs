@@ -28,7 +28,7 @@ namespace PackageExplorer
                 downloadLocation = args[0];
             }
 
-            using (var loggerFactory = new LoggerFactory().AddConsole(LogLevel.Information))
+            using (var loggerFactory = new LoggerFactory().AddConsole(LogLevel.Warning))
             using (var httpClient = new HttpClient())
             {
                 var logger = loggerFactory.CreateLogger<Program>();
@@ -41,10 +41,11 @@ namespace PackageExplorer
                 var factory = new PackageInfoFactory(Repository.Factory.GetCoreV3(NuGetConstants.V3FeedUrl), versionFolderPathResolver);
                 var packagePersistenceUtility = new PackagePersistenceUtility(loggerFactory.CreateLogger<PackagePersistenceUtility>());
 
-                var leafProcessor = new CatalogLeafProcessor(factory, packagePersistenceUtility, loggerFactory.CreateLogger<CatalogLeafProcessor>());
+                var leafProcessor = new CompatibilityAnalyzingCatalogLeafProcessor(factory, loggerFactory.CreateLogger<CompatibilityAnalyzingCatalogLeafProcessor>());
                 var settings = new CatalogProcessorSettings
                 {
-                    MinCommitTimestamp = DateTimeOffset.UtcNow.AddDays(-180),
+                    MinCommitTimestamp = DateTimeOffset.UtcNow.AddDays(-300),
+                    MaxCommitTimestamp = DateTimeOffset.UtcNow.AddDays(-299),
                     ExcludeRedundantLeaves = false,
                 };
 
@@ -56,6 +57,7 @@ namespace PackageExplorer
                     loggerFactory.CreateLogger<CatalogProcessor>());
 
                 int consecutiveFailures = 0;
+                int count = 0;
                 do
                 {
                     var success = await catalogProcessor.ProcessAsync();
@@ -68,35 +70,11 @@ namespace PackageExplorer
                     {
                         consecutiveFailures = 0;
                     }
+                    count++;
                 }
-                while (consecutiveFailures < 3);
+                while (consecutiveFailures < 3 && count < 30);
             }
             return 0;
-        }
-
-        // Not all the files from a zip file are needed
-        // So, files such as '.rels' and '[Content_Types].xml' are not relevant
-        private static bool ShouldInclude(string fullName)
-        {
-            var fileName = Path.GetFileName(fullName);
-            if (fileName != null)
-            {
-                if (fileName == ".rels")
-                {
-                    return false;
-                }
-                if (fileName == "[Content_Types].xml")
-                {
-                    return false;
-                }
-            }
-
-            var extension = Path.GetExtension(fullName);
-            if (extension == ".psmdcp")
-            {
-                return false;
-            }
-            return true;
         }
 
         public static async Task<IEnumerable<string>> GetPackageFileListFromFlatContainerAsync(HttpZipProvider httpZipProvider, Uri url, Func<IEnumerable<string>, IEnumerable<string>> filter = null)
