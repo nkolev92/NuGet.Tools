@@ -40,6 +40,8 @@ namespace PackageExplorer
         public IEnumerable<string> AnyTargetFrameworks { get; set; }
         public IEnumerable<string> AnyTargetFiles { get; set; }
 
+        public bool PotentialCompatibilityInconsistency { get; set; }
+        public bool DependencyGroupContainsAny { get; set; }
 
         public PackageCompatibilityInfo(string id, string version)
         {
@@ -66,8 +68,9 @@ namespace PackageExplorer
                    $"MSBuildTransitiveFrameworks={string.Join(",", MSBuildTransitiveFrameworks.ToArray())}" + Environment.NewLine +
                    $"MSBuildTransitiveFiles={string.Join(",", MSBuildTransitiveFiles.ToArray())}" + Environment.NewLine +
                    $"AnyTargetFrameworks={string.Join(",", AnyTargetFrameworks.ToArray())}" + Environment.NewLine +
-                   $"AnyTargetFiles={string.Join(",", AnyTargetFiles.ToArray())}";
-
+                   $"AnyTargetFiles={string.Join(",", AnyTargetFiles.ToArray())}" + Environment.NewLine +
+                   $"PotentialCompatibilityInconsistency={PotentialCompatibilityInconsistency}" + Environment.NewLine +
+                   $"DependencyGroupContainsAny={DependencyGroupContainsAny}";
         }
     }
 }

@@ -44,20 +44,32 @@ namespace PackageExplorer
         private async Task<bool> GetResultAsync(ICatalogLeafItem leaf)
         {
             var packageInfo = await _packageInfoFactory.CreatePackageInfo(leaf.PackageId, leaf.PackageVersion);
-            
 
-            using (var nupkgStream = await httpClient.GetStreamAsync(packageInfo.ContentUri))
-            using (var packageArchiveReader = new PackageArchiveReader(nupkgStream))
+
+            try
             {
-                var nuspecReader = packageArchiveReader.NuspecReader;
+                using (var nupkgStream = await httpClient.GetStreamAsync(packageInfo.ContentUri))
+                using (var packageArchiveReader = new PackageArchiveReader(nupkgStream))
+                {
+                    var nuspecReader = packageArchiveReader.NuspecReader;
 
-                var analyzedObject = new PackageCompatibilityInfo(leaf.PackageId, leaf.PackageVersion);
-                
-                var fileList = packageArchiveReader.GetFiles().Where(e => ShouldInclude(e));
-                analyzedObject.AnalyzePackageContentCompatibility(fileList);
-                analyzedObject.AnalyzePackageDependenciesCompatibility(nuspecReader);
+                    var analyzedObject = new PackageCompatibilityInfo(leaf.PackageId, leaf.PackageVersion);
 
-                _logger.LogWarning(analyzedObject.ToString());
+                    var fileList = packageArchiveReader.GetFiles().Where(e => ShouldInclude(e));
+                    analyzedObject.AnalyzePackageContentCompatibility(fileList);
+                    analyzedObject.AnalyzePackageDependenciesCompatibility(nuspecReader);
+                    analyzedObject.AnalyzePotentialTargetFrameworkInconsistencies();
+
+                    _logger.LogWarning(analyzedObject.ToString());
+
+                }
+            }
+            catch (Exception e)
+            {
+                if (!e.Message.Contains("404"))
+                {
+                    throw e;
+                }
 
             }
             return true;
