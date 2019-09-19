@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -81,15 +82,19 @@ namespace PackagesConfigAnalysisTool
                 var dependantPackages = PackageGraphAnalysisUtilities.GetPackagesWithDependants(packageDependencyInfos);
 
                 Console.WriteLine("Top level packages:");
+                Console.WriteLine();
+
                 foreach (var package in dependantPackages.Where(e => e.IsTopLevelPackage))
                 {
-                    Console.WriteLine(package.Identity);
+                    Console.WriteLine(package.Identity.Id + " " + package.Identity.Version);
                 }
 
+                Console.WriteLine();
                 Console.WriteLine("Transitive packages:");
+                Console.WriteLine();
                 foreach (var package in dependantPackages.Where(e => !e.IsTopLevelPackage))
                 {
-                    Console.WriteLine(package.Identity);
+                    Console.WriteLine(package.Identity.Id + " " + package.Identity.Version);
                 }
             }
             catch (Exception e)
