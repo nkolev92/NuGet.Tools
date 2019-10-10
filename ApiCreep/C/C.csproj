@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RestoreSources>F:\NuGet.Tools\ApiCreep\A\bin\Debug\;F:\NuGet.Tools\ApiCreep\B\bin\Debug\</RestoreSources>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="A" Version="1.0.0" />
+  </ItemGroup>
+
+</Project>
