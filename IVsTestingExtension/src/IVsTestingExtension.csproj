@@ -60,10 +60,11 @@
     <Compile Include="Commands\ShowToolWindow.cs" />
     <Compile Include="ServiceProviderExtensions.cs" />
     <Compile Include="ToolWindows\CommandInvokingWindow.cs" />
+    <Compile Include="ToolWindows\ThreadAffinity.cs" />
     <Compile Include="ToolWindows\ToolWindowControl.xaml.cs">
       <DependentUpon>ToolWindowControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ToolWindows\PackageInstallerState.cs" />
+    <Compile Include="ToolWindows\PackageInstallerModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="VSCommandTable.vsct">

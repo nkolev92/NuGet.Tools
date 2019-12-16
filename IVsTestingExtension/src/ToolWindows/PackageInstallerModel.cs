@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
@@ -12,64 +13,51 @@ using NuGet.VisualStudio;
 
 namespace IVsTestingExtension.ToolWindows
 {
-    public class PackageInstallerState : INotifyPropertyChanged
+    public class PackageInstallerModel : INotifyPropertyChanged
     {
         private string _resultText;
         private string _packageId;
         private string _packageVersion;
-        private List<string> _projects;
+        private HashSet<string> _projects;
         private string _projectName;
         private ThreadAffinity _threadAffinity;
 
-        internal readonly DTE dte;
+        private readonly DTE dte;
         private readonly IVsAsyncPackageInstaller vsAsyncPackageInstaller;
+        private SolutionEvents solutionEvents; // We need a reference to SolutionEvents to avoid getting GC'ed
 
-        public PackageInstallerState(DTE _dte, IVsAsyncPackageInstaller _vsAsyncPackageInstaller)
+        // We don't really handle the no solution case so well :) 
+        public PackageInstallerModel(DTE _dte, IVsAsyncPackageInstaller _vsAsyncPackageInstaller)
         {
             vsAsyncPackageInstaller = _vsAsyncPackageInstaller;
             dte = _dte;
             ResultText = string.Empty;
             ProjectName = "Project Name";
-            PackageVersion = "Package Version";
-            PackageId = "Package Id";
+            PackageVersion = "6.0.4";
+            PackageId = "Newtonsoft.Json";
         }
 
-        public List<string> Projects
+        internal async System.Threading.Tasks.Task InitializeAsync()
         {
-            get
-            {
-                if(_projects == null)
-                {
-                    var projects = new List<string>
-                    {
-                        "ConsoleApp4"
-                    };
-                    //foreach(Project project in (Solution)dte.Solution.Projects)
-                    //{
-                    //    projects.Add(project.Name);
-                    //}
-                    _projects = projects;
-
-                }
-                return _projects;
-            }
-            set
-            {
-                _projects = value;
-                OnPropertyChanged("ResultText");
-            }
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            solutionEvents = dte.Events.SolutionEvents;
+            solutionEvents.Opened += OnSolutionLoaded;
+            solutionEvents.BeforeClosing += OnSolutionClosing;
+            solutionEvents.ProjectAdded += OnEnvDTEProjectAdded;
+            solutionEvents.ProjectRemoved += OnEnvDTEProjectRemoved;
+            solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
         }
 
         public void Clicked()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Project projectSelected = GetSelectedProject();
-
             if (vsAsyncPackageInstaller == null)
             {
                 ResultText = "No installer service";
                 return;
             }
+
+            Project projectSelected = GetSelectedProject();
 
             if (projectSelected == null)
             {
@@ -225,6 +213,16 @@ namespace IVsTestingExtension.ToolWindows
             return projectSelected;
         }
 
+        public IEnumerable<string> Projects
+        {
+            get => _projects;
+            set
+            {
+                _projects = new HashSet<string>(value);
+                OnPropertyChanged("Projects");
+            }
+        }
+
         public string ResultText
         {
             get => _resultText;
@@ -280,6 +278,70 @@ namespace IVsTestingExtension.ToolWindows
         protected void OnPropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        private void OnSolutionClosing()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            _projects?.Clear();
+            Projects = _projects;
+            UpdateProjectName();
+        }
+
+        private void OnSolutionLoaded()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var projects = new HashSet<string>();
+            foreach (Project project in dte.Solution.Projects)
+            {
+                projects.Add(project.Name);
+            }
+            _projects = projects;
+            Projects = _projects;
+            UpdateProjectName();
+        }
+
+        private void OnEnvDTEProjectRenamed(Project Project, string OldName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            _projects.Remove(OldName);
+            _projects.Add(Project.Name);
+            Projects = _projects;
+            UpdateProjectName();
+        }
+
+        private void OnEnvDTEProjectRemoved(Project Project)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            _projects.Remove(Project.Name);
+            Projects = _projects;
+            UpdateProjectName();
+        }
+
+        private void OnEnvDTEProjectAdded(Project Project)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            _projects.Add(Project.Name);
+            Projects = _projects;
+            UpdateProjectName();
+        }
+
+        private void UpdateProjectName()
+        {
+            if (string.IsNullOrEmpty(_projectName))
+            {
+                if (_projects?.Count > 0)
+                {
+                    ProjectName = _projects.First();
+                }
+            }
+            else
+            {
+                if (!_projects.Contains(_projectName))
+                {
+                    ProjectName = _projects.First();
+                }
+            }
         }
     }
 }

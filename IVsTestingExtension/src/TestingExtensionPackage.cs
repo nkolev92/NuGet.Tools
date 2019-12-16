@@ -44,7 +44,9 @@ namespace IVsTestingExtension
         protected override async Task<object> InitializeToolWindowAsync(Type toolWindowType, int id, CancellationToken cancellationToken)
         {
             var dte = await this.GetDTEAsync();
-            return new PackageInstallerState(dte, vsAsyncPackageInstaller);
+            var model = new PackageInstallerModel(dte, vsAsyncPackageInstaller);
+            await model.InitializeAsync();
+            return model;
         }
     }
 }
