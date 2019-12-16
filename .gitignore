@@ -17,6 +17,7 @@ cli1.0.4/
 packages/
 .nuget/nuget.exe
 */.nuget/
+*/gpf/
 
 # remove ilmerge log
 mergelog.txt
