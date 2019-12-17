@@ -8,33 +8,26 @@ using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
-using NuGet.VisualStudio;
-
 
 namespace IVsTestingExtension.ToolWindows
 {
-    public class PackageInstallerModel : INotifyPropertyChanged
+    public class ProjectCommandTestingModel : INotifyPropertyChanged
     {
-        private string _resultText;
-        private string _packageId;
-        private string _packageVersion;
+        private string _arguments;
         private HashSet<string> _projects;
         private string _projectName;
         private ThreadAffinity _threadAffinity;
 
         private readonly DTE dte;
-        private readonly IVsAsyncPackageInstaller vsAsyncPackageInstaller;
         private SolutionEvents solutionEvents; // We need a reference to SolutionEvents to avoid getting GC'ed
-
         // We don't really handle the no solution case so well :) 
-        public PackageInstallerModel(DTE _dte, IVsAsyncPackageInstaller _vsAsyncPackageInstaller)
+
+        private readonly Func<Project, Dictionary<string, string>, System.Threading.Tasks.Task> testMethodAsync;
+
+        public ProjectCommandTestingModel(DTE _dte, Func<Project, Dictionary<string, string>, System.Threading.Tasks.Task> _testMethodAsync)
         {
-            vsAsyncPackageInstaller = _vsAsyncPackageInstaller ?? throw new ArgumentNullException(nameof(_vsAsyncPackageInstaller));
+            testMethodAsync = _testMethodAsync ?? throw new ArgumentNullException(nameof(_testMethodAsync));
             dte = _dte ?? throw new ArgumentNullException(nameof(_dte));
-            ResultText = string.Empty;
-            ProjectName = "Project Name";
-            PackageVersion = "6.0.4";
-            PackageId = "Newtonsoft.Json";
         }
 
         internal async System.Threading.Tasks.Task InitializeAsync()
@@ -48,137 +41,107 @@ namespace IVsTestingExtension.ToolWindows
             solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
         }
 
+        private Dictionary<string, string> GetArgumentDictionary()
+        {
+            var dictionary = new Dictionary<string, string>();
+            if (!string.IsNullOrEmpty(Arguments))
+            {
+                var allArgs = Arguments.Split(';');
+                foreach (var arg in allArgs)
+                {
+                    var kvp = arg.Trim().Split('=');
+                    if (kvp.Length == 2) // We ignore bad arguments...tough luck. No need for extra validation. :)
+                    {
+                        dictionary.Add(kvp[0].Trim(), kvp[1].Trim());
+                    }
+                }
+            }
+            return dictionary;
+        }
+
         public void Clicked()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Project projectSelected = GetSelectedProject();
-            ResultText = $"Project {projectSelected.Name}! PackageId: {PackageId}, PackageVersion: {PackageVersion}";
 
             switch (ThreadAffinity)
             {
-                case ThreadAffinity.SYNC_JTFRUN_BLOCKING: // deadlock
+                case ThreadAffinity.SYNC_JTF_RUN: // deadlock
                     {
-                        ResultText += $"{Environment.NewLine}Running blocking call on the UI thread. ThreadHelper.JoinableTaskFactory.Run(async ()";
                         ThreadHelper.JoinableTaskFactory.Run(async () =>
                         {
-                            await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
-                                  projectSelected,
-                                  PackageId,
-                                  PackageVersion,
-                                  ignoreDependencies: false);
+                            await testMethodAsync(projectSelected, GetArgumentDictionary());
                         });
                         break;
                     }
-                case ThreadAffinity.SYNC_THREADPOOL_TASKRUN: // no deadlock usually.
+                case ThreadAffinity.SYNC_TASKRUN_UNAWAITED: // no deadlock usually.
                     {
-                        ResultText += $"{Environment.NewLine}Running on a background thread. Kicking off asynchronously. Task.Run(async ()";
                         _ = System.Threading.Tasks.Task.Run(async () =>
                         {
-                            await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
-                                projectSelected,
-                                PackageId,
-                                PackageVersion,
-                                ignoreDependencies: false);
+                            await testMethodAsync(projectSelected, GetArgumentDictionary());
                         });
                         break;
                     }
-                case ThreadAffinity.SYNC_BLOCKING_TASKRUN: // deadlock
+                case ThreadAffinity.SYNC_TASKRUN_BLOCKING: // deadlock
                     {
-                        ResultText += $"{Environment.NewLine}Running on the UI thread, blocking BLOCKING_TASKRUN. Kicking off asynchronously. Task.Run(async ()";
                         var task = System.Threading.Tasks.Task.Run(async () =>
                         {
-                            await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
-                                projectSelected,
-                                PackageId,
-                                PackageVersion,
-                                ignoreDependencies: false);
+                            await testMethodAsync(projectSelected, GetArgumentDictionary());
                         });
-                        try
-                        {
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits - Done on purpose. This would usually deadlock :) 
-                            task.Wait(CancellationToken.None);
+
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits - Done on purpose. This should deadlock in methods that are not free threaded. 
+                        task.Wait(CancellationToken.None);
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
-                        }
-                        catch (AggregateException)
-                        {
-                        }
                         break;
                     }
-                case ThreadAffinity.SYNC_JTFRUNASYNC_FIRE_FORGET:
+                case ThreadAffinity.SYNC_JTF_RUNASYNC_FIRE_FORGET:
                     {
-                        ResultText += $"{Environment.NewLine}Running blocking call on the UI thread. ThreadHelper.JoinableTaskFactory.RunAsync(async ()";
                         ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                         {
-                            // This is a background thread isn't it?
-                            // Actually it's the UI thread.
-                            await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
-                              projectSelected,
-                              PackageId,
-                              PackageVersion,
-                              ignoreDependencies: false);
+                            await testMethodAsync(projectSelected, GetArgumentDictionary());
                         });
                         break;
                     }
                 default:
-                    ResultText += "Unexpected ThreadAffinity";
                     break;
             }
-
-            ResultText += $"The invocation returned.";
         }
 
         public async System.Threading.Tasks.Task ClickedAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             Project projectSelected = GetSelectedProject();
-
-            if (projectSelected == null)
+            switch (ThreadAffinity)
             {
-                ResultText = $"Could not find project {ProjectName}";
-            }
-            else
-            {
-                ResultText = $"Found the project! PackageId: {PackageId}, PackageVersion: {PackageVersion}";
-                ResultText += $"{Environment.NewLine}Kicking off install package.";
+                case ThreadAffinity.ASYNC_FROM_UI:
+                    {
+                        await testMethodAsync(projectSelected, GetArgumentDictionary());
+                        break;
+                    }
+                case ThreadAffinity.ASYNC_FROM_BACKGROUND:
+                    {
+                        await TaskScheduler.Default;
 
-                if (ThreadAffinity == ThreadAffinity.ASYNC_FROM_UI)
-                {
-                    ResultText += $"{Environment.NewLine} Async on the UI thread";
-                    try
-                    {
-                        await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
-                              projectSelected,
-                              PackageId,
-                              PackageVersion,
-                              ignoreDependencies: false);
+                        await testMethodAsync(projectSelected, GetArgumentDictionary());
+                        break;
                     }
-                    catch (Exception e)
+                case ThreadAffinity.ASYNC_FREETHREADED_CHECK:
                     {
-                        ResultText += e.Message;
+                        // this test only catches issues when it blocks the UI thread.
+                        ThreadHelper.JoinableTaskFactory.Run(async delegate
+                        {
+                            using (ThreadHelper.JoinableTaskFactory.Context.SuppressRelevance())
+                            {
+                                await System.Threading.Tasks.Task.Run(async delegate
+                                {
+                                    await testMethodAsync(projectSelected, GetArgumentDictionary());
+                                });
+                            }
+                        });
+                        break;
                     }
-                }
-                else if (ThreadAffinity == ThreadAffinity.ASYNC_FROM_BACKGROUND)
-                {
-                    ResultText += $"{Environment.NewLine}Switching to a threadpool thread.";
-                    await TaskScheduler.Default;
-                    try
-                    {
-                        await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
-                            projectSelected,
-                            PackageId,
-                            PackageVersion,
-                            ignoreDependencies: false);
-                    }
-                    catch (Exception e)
-                    {
-                        ResultText += e.Message;
-                    }
-                }
-                else
-                {
-                    ResultText += $"{Environment.NewLine} Not suitable {ThreadAffinity}";
-                }
+                default:
+                    break;
             }
         }
 
@@ -196,7 +159,6 @@ namespace IVsTestingExtension.ToolWindows
                     break;
                 }
             }
-
             return projectSelected;
         }
 
@@ -210,16 +172,6 @@ namespace IVsTestingExtension.ToolWindows
             }
         }
 
-        public string ResultText
-        {
-            get => _resultText;
-            set
-            {
-                _resultText = value;
-                OnPropertyChanged("ResultText");
-            }
-        }
-
         public ThreadAffinity ThreadAffinity
         {
             get => _threadAffinity;
@@ -230,23 +182,13 @@ namespace IVsTestingExtension.ToolWindows
             }
         }
 
-        public string PackageId
+        public string Arguments
         {
-            get => _packageId;
+            get => _arguments;
             set
             {
-                _packageId = value;
-                OnPropertyChanged("PackageId");
-            }
-        }
-
-        public string PackageVersion
-        {
-            get => _packageVersion;
-            set
-            {
-                _packageVersion = value;
-                OnPropertyChanged("PackageVersion");
+                _arguments = value;
+                OnPropertyChanged("Arguments");
             }
         }
 

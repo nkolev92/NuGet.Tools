@@ -64,7 +64,7 @@
     <Compile Include="ToolWindows\ToolWindowControl.xaml.cs">
       <DependentUpon>ToolWindowControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ToolWindows\PackageInstallerModel.cs" />
+    <Compile Include="ToolWindows\ProjectCommandTestingModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="VSCommandTable.vsct">
@@ -147,7 +147,7 @@
       <Version>9.0.1</Version>
     </PackageReference>
     <PackageReference Include="NuGet.VisualStudio">
-      <Version>5.5.0-zlocal.60457</Version>
+      <Version>5.5.0-zlocal.59547</Version>
     </PackageReference>
     <PackageReference Include="StreamJsonRpc">
       <Version>1.3.23</Version>
