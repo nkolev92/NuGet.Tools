@@ -20,7 +20,7 @@ namespace IVsTestingExtension
     public sealed class TestingExtensionPackage : AsyncPackage
     {
         [Import]
-        IVsAsyncPackageInstaller vsAsyncPackageInstaller { get; set; }
+        IVsAsyncPackageInstaller VsAsyncPackageInstaller { get; set; }
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
@@ -44,7 +44,7 @@ namespace IVsTestingExtension
         protected override async Task<object> InitializeToolWindowAsync(Type toolWindowType, int id, CancellationToken cancellationToken)
         {
             var dte = await this.GetDTEAsync();
-            var model = new PackageInstallerModel(dte, vsAsyncPackageInstaller);
+            var model = new PackageInstallerModel(dte, VsAsyncPackageInstaller);
             await model.InitializeAsync();
             return model;
         }

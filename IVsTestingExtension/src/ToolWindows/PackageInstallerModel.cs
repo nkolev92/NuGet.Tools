@@ -29,8 +29,8 @@ namespace IVsTestingExtension.ToolWindows
         // We don't really handle the no solution case so well :) 
         public PackageInstallerModel(DTE _dte, IVsAsyncPackageInstaller _vsAsyncPackageInstaller)
         {
-            vsAsyncPackageInstaller = _vsAsyncPackageInstaller;
-            dte = _dte;
+            vsAsyncPackageInstaller = _vsAsyncPackageInstaller ?? throw new ArgumentNullException(nameof(_vsAsyncPackageInstaller));
+            dte = _dte ?? throw new ArgumentNullException(nameof(_dte));
             ResultText = string.Empty;
             ProjectName = "Project Name";
             PackageVersion = "6.0.4";
@@ -51,98 +51,85 @@ namespace IVsTestingExtension.ToolWindows
         public void Clicked()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            if (vsAsyncPackageInstaller == null)
-            {
-                ResultText = "No installer service";
-                return;
-            }
-
             Project projectSelected = GetSelectedProject();
+            ResultText = $"Project {projectSelected.Name}! PackageId: {PackageId}, PackageVersion: {PackageVersion}";
 
-            if (projectSelected == null)
+            switch (ThreadAffinity)
             {
-                ResultText = $"Could not find project {ProjectName}";
-            }
-            else
-            {
-                ResultText = $"Found the project! PackageId: {PackageId}, PackageVersion: {PackageVersion}";
-
-                if (ThreadAffinity == ThreadAffinity.SYNC_JTFRUN_BLOCKING)
-                {
-                    // This deadlocks - yikes.
-                    ResultText += $"{Environment.NewLine}Running blocking call on the UI thread. ThreadHelper.JoinableTaskFactory.Run(async ()";
-                    ThreadHelper.JoinableTaskFactory.Run(async () =>
+                case ThreadAffinity.SYNC_JTFRUN_BLOCKING: // deadlock
                     {
-                        await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
-                              projectSelected,
-                              PackageId,
-                              PackageVersion,
-                              ignoreDependencies: false);
-                    });
-                }
-                else if (ThreadAffinity == ThreadAffinity.SYNC_THREADPOOL_TASKRUN) // no deadlock
-                {
-                    ResultText += $"{Environment.NewLine}Running on a background thread. Kicking off asynchronously. Task.Run(async ()";
-                    System.Threading.Tasks.Task.Run(async () =>
-                      {
-                          await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
-                              projectSelected,
-                              PackageId,
-                              PackageVersion,
-                              ignoreDependencies: false);
-                      });
-                }
-                else if (ThreadAffinity == ThreadAffinity.SYNC_BLOCKING_TASKRUN) //deadlock
-                {
-                    ResultText += $"{Environment.NewLine}Running on the UI thread, blocking BLOCKING_TASKRUN. Kicking off asynchronously. Task.Run(async ()";
-                    var task = System.Threading.Tasks.Task.Run(async () =>
-                    {
-                        await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
-                            projectSelected,
-                            PackageId,
-                            PackageVersion,
-                            ignoreDependencies: false);
-                    });
-                    try
-                    {
-                        task.Wait(CancellationToken.None);
+                        ResultText += $"{Environment.NewLine}Running blocking call on the UI thread. ThreadHelper.JoinableTaskFactory.Run(async ()";
+                        ThreadHelper.JoinableTaskFactory.Run(async () =>
+                        {
+                            await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
+                                  projectSelected,
+                                  PackageId,
+                                  PackageVersion,
+                                  ignoreDependencies: false);
+                        });
+                        break;
                     }
-                    catch (AggregateException ex)
+                case ThreadAffinity.SYNC_THREADPOOL_TASKRUN: // no deadlock usually.
                     {
+                        ResultText += $"{Environment.NewLine}Running on a background thread. Kicking off asynchronously. Task.Run(async ()";
+                        _ = System.Threading.Tasks.Task.Run(async () =>
+                        {
+                            await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
+                                projectSelected,
+                                PackageId,
+                                PackageVersion,
+                                ignoreDependencies: false);
+                        });
+                        break;
                     }
-                }
-                else if (ThreadAffinity == ThreadAffinity.SYNC_JTFRUNASYNC_FIRE_FORGET) // No deadlock
-                {
-                    ResultText += $"{Environment.NewLine}Running blocking call on the UI thread. ThreadHelper.JoinableTaskFactory.RunAsync(async ()";
-                    ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                case ThreadAffinity.SYNC_BLOCKING_TASKRUN: // deadlock
                     {
-                        // This is a background thread isn't it?
-                        // Actually it's the UI thread.
-                        await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
+                        ResultText += $"{Environment.NewLine}Running on the UI thread, blocking BLOCKING_TASKRUN. Kicking off asynchronously. Task.Run(async ()";
+                        var task = System.Threading.Tasks.Task.Run(async () =>
+                        {
+                            await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
+                                projectSelected,
+                                PackageId,
+                                PackageVersion,
+                                ignoreDependencies: false);
+                        });
+                        try
+                        {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits - Done on purpose. This would usually deadlock :) 
+                            task.Wait(CancellationToken.None);
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
+                        }
+                        catch (AggregateException)
+                        {
+                        }
+                        break;
+                    }
+                case ThreadAffinity.SYNC_JTFRUNASYNC_FIRE_FORGET:
+                    {
+                        ResultText += $"{Environment.NewLine}Running blocking call on the UI thread. ThreadHelper.JoinableTaskFactory.RunAsync(async ()";
+                        ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                        {
+                            // This is a background thread isn't it?
+                            // Actually it's the UI thread.
+                            await vsAsyncPackageInstaller.InstallPackageAsync(source: null,
                               projectSelected,
                               PackageId,
                               PackageVersion,
                               ignoreDependencies: false);
-                    });
-                }
-                else
-                {
-                    ResultText += $"{Environment.NewLine} Not suitable {ThreadAffinity}";
-                }
-
-                ResultText += $"{Environment.NewLine}Kicked off install package.";
+                        });
+                        break;
+                    }
+                default:
+                    ResultText += "Unexpected ThreadAffinity";
+                    break;
             }
+
+            ResultText += $"The invocation returned.";
         }
 
         public async System.Threading.Tasks.Task ClickedAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            if (vsAsyncPackageInstaller == null)
-            {
-                ResultText = "No installer service";
-                return;
-            }
 
             Project projectSelected = GetSelectedProject();
 
