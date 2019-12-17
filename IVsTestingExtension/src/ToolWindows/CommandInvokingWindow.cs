@@ -11,7 +11,7 @@ namespace IVsTestingExtension.ToolWindows
         public const string WindowGuidString = "5D42A8E4-F0AE-44BD-B0A1-193C8901364C";
         public const string Title = "Command Invoking Window";
 
-        public CommandInvokingWindow(PackageInstallerModel state) : base()
+        public CommandInvokingWindow(ProjectCommandTestingModel state) : base()
         {
             Caption = Title;
             BitmapImageMoniker = KnownMonikers.ImageIcon;

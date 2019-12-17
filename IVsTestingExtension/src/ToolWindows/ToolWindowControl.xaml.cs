@@ -8,26 +8,31 @@ namespace IVsTestingExtension.ToolWindows
     public partial class ToolWindowControl : UserControl
     {
 
-        private PackageInstallerModel _state;
+        private ProjectCommandTestingModel _model;
 
-        public ToolWindowControl(PackageInstallerModel state)
+        public ToolWindowControl(ProjectCommandTestingModel model)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-            _state = state;
+            _model = model;
             InitializeComponent();
-            PackageId.DataContext = _state;
-            PackageVersion.DataContext = _state;
-            ProjectName.DataContext = _state;
-            Result.DataContext = _state;
-            Affinity.DataContext = _state;
+            Arguments.DataContext = _model;
+            ProjectName.DataContext = _model;
+            Affinity.DataContext = _model;
             Affinity.ItemsSource = Enum.GetValues(typeof(ThreadAffinity)).Cast<ThreadAffinity>();
-            Affinity.SelectedItem = ThreadAffinity.SYNC_JTFRUN_BLOCKING;
+            Affinity.SelectedItem = ThreadAffinity.SYNC_JTF_RUN;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-            _state.Clicked();
+            try
+            {
+                _model.Clicked();
+            }
+            catch
+            {
+                // do nothing
+            }
         }
 
 #pragma warning disable VSTHRD100 // Avoid async void methods - UI events need to be void.
@@ -38,7 +43,7 @@ namespace IVsTestingExtension.ToolWindows
         {
             try
             {
-                await _state.ClickedAsync();
+                await _model.ClickedAsync();
             }
             catch
             {

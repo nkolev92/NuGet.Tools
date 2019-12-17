@@ -64,7 +64,7 @@
     <Compile Include="ToolWindows\ToolWindowControl.xaml.cs">
       <DependentUpon>ToolWindowControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ToolWindows\PackageInstallerModel.cs" />
+    <Compile Include="ToolWindows\ProjectCommandTestingModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="VSCommandTable.vsct">

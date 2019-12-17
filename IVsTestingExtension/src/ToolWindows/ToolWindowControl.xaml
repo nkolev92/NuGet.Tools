@@ -17,19 +17,15 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <TextBox x:Name="PackageId" Text="{Binding PackageId}" Grid.Row="0"/>
-        <TextBox x:Name="PackageVersion" Text="{Binding PackageVersion}" Grid.Row="1"/>
-
-        <ComboBox x:Name="ProjectName" Grid.Row="2"
+        <ComboBox x:Name="ProjectName" Grid.Row="0"
                   ItemsSource="{Binding Projects}"
                   SelectedItem="{Binding ProjectName, Mode=TwoWay}" Text="Project" />
-        <ComboBox x:Name="Affinity" Grid.Row="3"
+        <TextBox x:Name="Arguments" Text="{Binding Arguments}" Grid.Row="1"/>
+        <ComboBox x:Name="Affinity" Grid.Row="2"
                   ItemsSource="{Binding Source={StaticResource dataFromEnum}}"
                   SelectedItem="{Binding Path=ThreadAffinity}" />
-        <Grid x:Name="ButtonGrid" Grid.Row="4">
+        <Grid x:Name="ButtonGrid" Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
@@ -37,6 +33,5 @@
             <Button  x:Name="TheRunButton" Grid.Column="0" Content="Run" Click="Button_Click" HorizontalAlignment="Center" VerticalAlignment="Center" />
             <Button  x:Name="TheRunButtonAsync" Grid.Column="1" Content="Run Async" Click="Button_ClickAsync" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Grid>
-        <TextBox x:Name="Result" Text="{Binding ResultText}" Grid.Row="5"/>
     </Grid>
 </UserControl>
