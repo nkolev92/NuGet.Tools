@@ -21,7 +21,7 @@ namespace IVsTestingExtension
     public sealed class TestingExtensionPackage : AsyncPackage
     {
         [Import]
-        IVsAsyncPackageInstaller VsAsyncPackageInstaller { get; set; }
+        IVsPackageInstaller VsAsyncPackageInstaller { get; set; }
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
@@ -59,7 +59,7 @@ namespace IVsTestingExtension
             arguments.TryGetValue("ignoreDependencies", out string ignoreDependenciesStr);
             bool.TryParse(ignoreDependenciesStr, out bool ignoreDependencies);
 
-            await VsAsyncPackageInstaller.InstallPackageAsync(source: source,
+            VsAsyncPackageInstaller.InstallPackage(source: source,
                                               projectSelected,
                                               packageId,
                                               packageVersion,

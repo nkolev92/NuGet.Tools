@@ -34,11 +34,12 @@ namespace IVsTestingExtension.ToolWindows
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             solutionEvents = dte.Events.SolutionEvents;
-            solutionEvents.Opened += OnSolutionLoaded;
+            solutionEvents.Opened += OnLoad;
             solutionEvents.BeforeClosing += OnSolutionClosing;
             solutionEvents.ProjectAdded += OnEnvDTEProjectAdded;
             solutionEvents.ProjectRemoved += OnEnvDTEProjectRemoved;
             solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
+            OnLoad();
         }
 
         private Dictionary<string, string> GetArgumentDictionary()
@@ -167,7 +168,15 @@ namespace IVsTestingExtension.ToolWindows
             get => _projects;
             set
             {
-                _projects = new HashSet<string>(value);
+                if (value != null)
+                {
+                    _projects = new HashSet<string>(value);
+                }
+                else
+                {
+                    _projects = new HashSet<string>();
+                }
+
                 OnPropertyChanged("Projects");
             }
         }
@@ -217,7 +226,7 @@ namespace IVsTestingExtension.ToolWindows
             UpdateProjectName();
         }
 
-        private void OnSolutionLoaded()
+        private void OnLoad()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             var projects = new HashSet<string>();
