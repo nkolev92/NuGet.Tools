@@ -1,4 +1,4 @@
-﻿namespace IVsTestingExtension.ToolWindows
+﻿namespace IVsTestingExtension
 {
     public enum ThreadAffinity
     {

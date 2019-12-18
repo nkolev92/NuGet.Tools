@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using EnvDTE;
+using IVsTestingExtension.Tests;
 using IVsTestingExtension.ToolWindows;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace IVsTestingExtension
@@ -21,7 +19,7 @@ namespace IVsTestingExtension
     public sealed class TestingExtensionPackage : AsyncPackage
     {
         [Import]
-        IVsPackageInstaller VsAsyncPackageInstaller { get; set; }
+        ITestMethodProvider TestMethodFactory { get; set; }
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
@@ -45,25 +43,9 @@ namespace IVsTestingExtension
         protected override async Task<object> InitializeToolWindowAsync(Type toolWindowType, int id, CancellationToken cancellationToken)
         {
             var dte = await this.GetDTEAsync();
-            Task testMethodAsync(Project project, Dictionary<string, string> arguments) => TestMethodAsync(project, arguments);
-            var model = new ProjectCommandTestingModel(dte, testMethodAsync);
+            var model = new ProjectCommandTestingModel(dte, TestMethodFactory.GetMethod());
             await model.InitializeAsync();
             return model;
-        }
-
-        private async Task TestMethodAsync(Project projectSelected, Dictionary<string, string> arguments)
-        {
-            arguments.TryGetValue("packageId", out string packageId);
-            arguments.TryGetValue("packageVersion", out string packageVersion);
-            arguments.TryGetValue("source", out string source);
-            arguments.TryGetValue("ignoreDependencies", out string ignoreDependenciesStr);
-            bool.TryParse(ignoreDependenciesStr, out bool ignoreDependencies);
-
-            VsAsyncPackageInstaller.InstallPackage(source: source,
-                                              projectSelected,
-                                              packageId,
-                                              packageVersion,
-                                              ignoreDependencies: ignoreDependencies);
         }
     }
 }
