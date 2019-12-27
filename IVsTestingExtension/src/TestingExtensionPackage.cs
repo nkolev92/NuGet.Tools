@@ -4,8 +4,9 @@ using System.ComponentModel.Composition;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using EnvDTE;
 using IVsTestingExtension.ToolWindows;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
@@ -20,9 +21,6 @@ namespace IVsTestingExtension
     [ProvideMenuResource("Menus.ctmenu", 1)]
     public sealed class TestingExtensionPackage : AsyncPackage
     {
-        [Import]
-        IVsAsyncPackageInstaller VsAsyncPackageInstaller { get; set; }
-
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             var componentModel = await this.GetComponentModelAsync();
@@ -42,17 +40,38 @@ namespace IVsTestingExtension
             return toolWindowType == typeof(CommandInvokingWindow) ? CommandInvokingWindow.Title : base.GetToolWindowTitle(toolWindowType, id);
         }
 
+        internal const string IVsAsyncPackageInstallerServiceName = "IVsAsyncPackageInstaller";
+        internal const string IVsAsyncPackageInstallerServiceVersion = "1.0";
+
+        internal static ServiceRpcDescriptor Descriptor { get; } = new ServiceJsonRpcDescriptor(
+            new ServiceMoniker(IVsAsyncPackageInstallerServiceName, new Version(IVsAsyncPackageInstallerServiceVersion)),
+            ServiceJsonRpcDescriptor.Formatters.MessagePack,
+            ServiceJsonRpcDescriptor.MessageDelimiters.BigEndianInt32LengthHeader);
+
         protected override async Task<object> InitializeToolWindowAsync(Type toolWindowType, int id, CancellationToken cancellationToken)
         {
             var dte = await this.GetDTEAsync();
-            Task testMethodAsync(Project project, Dictionary<string, string> arguments) => TestMethodAsync(project, arguments);
+            IVsAsyncPackageInstaller client = await GetIVsPackageInstallerClientAsync();
+
+            Task testMethodAsync(string project, Dictionary<string, string> arguments) => TestMethodAsync(client, project, arguments);
             var model = new ProjectCommandTestingModel(dte, testMethodAsync);
             await model.InitializeAsync();
             return model;
         }
 
-        private async Task TestMethodAsync(Project projectSelected, Dictionary<string, string> arguments)
+        private async Task<IVsAsyncPackageInstaller> GetIVsPackageInstallerClientAsync()
         {
+            IBrokeredServiceContainer brokeredServiceContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
+            Assumes.Present(brokeredServiceContainer);
+            IServiceBroker sb = brokeredServiceContainer.GetFullAccessServiceBroker();
+            IVsAsyncPackageInstaller client = await sb.GetProxyAsync<IVsAsyncPackageInstaller>(Descriptor, this.DisposalToken);
+            return client;
+        }
+
+        private async Task TestMethodAsync(IVsAsyncPackageInstaller VsAsyncPackageInstaller, string projectSelected, Dictionary<string, string> arguments)
+        {
+            IVsAsyncPackageInstaller client2 = await GetIVsPackageInstallerClientAsync();
+
             arguments.TryGetValue("packageId", out string packageId);
             arguments.TryGetValue("packageVersion", out string packageVersion);
             arguments.TryGetValue("source", out string source);

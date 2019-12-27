@@ -22,9 +22,9 @@ namespace IVsTestingExtension.ToolWindows
         private SolutionEvents solutionEvents; // We need a reference to SolutionEvents to avoid getting GC'ed
         // We don't really handle the no solution case so well :) 
 
-        private readonly Func<Project, Dictionary<string, string>, System.Threading.Tasks.Task> testMethodAsync;
+        private readonly Func<string, Dictionary<string, string>, System.Threading.Tasks.Task> testMethodAsync;
 
-        public ProjectCommandTestingModel(DTE _dte, Func<Project, Dictionary<string, string>, System.Threading.Tasks.Task> _testMethodAsync)
+        public ProjectCommandTestingModel(DTE _dte, Func<string, Dictionary<string, string>, System.Threading.Tasks.Task> _testMethodAsync)
         {
             testMethodAsync = _testMethodAsync ?? throw new ArgumentNullException(nameof(_testMethodAsync));
             dte = _dte ?? throw new ArgumentNullException(nameof(_dte));
@@ -62,7 +62,7 @@ namespace IVsTestingExtension.ToolWindows
         public void Clicked()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Project projectSelected = GetSelectedProject();
+            string projectSelected = GetSelectedProject().UniqueName;
 
             switch (ThreadAffinity)
             {
@@ -110,7 +110,7 @@ namespace IVsTestingExtension.ToolWindows
         public async System.Threading.Tasks.Task ClickedAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            Project projectSelected = GetSelectedProject();
+            string projectSelected = GetSelectedProject().UniqueName;
             switch (ThreadAffinity)
             {
                 case ThreadAffinity.ASYNC_FROM_UI:
