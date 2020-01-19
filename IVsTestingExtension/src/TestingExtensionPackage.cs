@@ -9,7 +9,8 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.VisualStudio;
+using Microsoft.VisualStudio.Shell.ServiceBroker;
+using NuGet.VisualStudio.Contracts;
 using Task = System.Threading.Tasks.Task;
 
 namespace IVsTestingExtension
@@ -70,19 +71,15 @@ namespace IVsTestingExtension
 
         private async Task TestMethodAsync(IVsAsyncPackageInstaller VsAsyncPackageInstaller, string projectSelected, Dictionary<string, string> arguments)
         {
-            IVsAsyncPackageInstaller client2 = await GetIVsPackageInstallerClientAsync();
-
             arguments.TryGetValue("packageId", out string packageId);
             arguments.TryGetValue("packageVersion", out string packageVersion);
             arguments.TryGetValue("source", out string source);
-            arguments.TryGetValue("ignoreDependencies", out string ignoreDependenciesStr);
-            bool.TryParse(ignoreDependenciesStr, out bool ignoreDependencies);
 
             await VsAsyncPackageInstaller.InstallPackageAsync(source: source,
                                               projectSelected,
                                               packageId,
                                               packageVersion,
-                                              ignoreDependencies: ignoreDependencies);
+                                              CancellationToken.None);
         }
     }
 }

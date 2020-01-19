@@ -114,9 +114,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Embeddable">
-      <Version>16.4.29305.180</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost">
       <Version>16.4.280</Version>
     </PackageReference>
@@ -153,7 +150,7 @@
       <Version>9.0.1</Version>
     </PackageReference>
     <PackageReference Include="NuGet.VisualStudio.Contracts">
-      <Version>5.5.0-preview.2</Version>
+      <Version>5.5.0-zlocal.3562</Version>
     </PackageReference>
     <PackageReference Include="StreamJsonRpc">
       <Version>2.2.53</Version>

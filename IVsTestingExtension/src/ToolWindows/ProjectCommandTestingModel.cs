@@ -167,7 +167,14 @@ namespace IVsTestingExtension.ToolWindows
             get => _projects;
             set
             {
-                _projects = new HashSet<string>(value);
+                if (value != null)
+                {
+                    _projects = new HashSet<string>(value);
+                }
+                else
+                {
+                    _projects = new HashSet<string>();
+                }
                 OnPropertyChanged("Projects");
             }
         }
@@ -242,7 +249,7 @@ namespace IVsTestingExtension.ToolWindows
         private void OnEnvDTEProjectRemoved(Project Project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            _projects.Remove(Project.Name);
+            _projects?.Remove(Project.Name);
             Projects = _projects;
             UpdateProjectName();
         }
@@ -250,7 +257,7 @@ namespace IVsTestingExtension.ToolWindows
         private void OnEnvDTEProjectAdded(Project Project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            _projects.Add(Project.Name);
+            _projects?.Add(Project.Name);
             Projects = _projects;
             UpdateProjectName();
         }
