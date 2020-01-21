@@ -41,18 +41,10 @@ namespace IVsTestingExtension
             return toolWindowType == typeof(CommandInvokingWindow) ? CommandInvokingWindow.Title : base.GetToolWindowTitle(toolWindowType, id);
         }
 
-        internal const string IVsAsyncPackageInstallerServiceName = "IVsAsyncPackageInstaller";
-        internal const string IVsAsyncPackageInstallerServiceVersion = "1.0";
-
-        internal static ServiceRpcDescriptor Descriptor { get; } = new ServiceJsonRpcDescriptor(
-            new ServiceMoniker(IVsAsyncPackageInstallerServiceName, new Version(IVsAsyncPackageInstallerServiceVersion)),
-            ServiceJsonRpcDescriptor.Formatters.MessagePack,
-            ServiceJsonRpcDescriptor.MessageDelimiters.BigEndianInt32LengthHeader);
-
         protected override async Task<object> InitializeToolWindowAsync(Type toolWindowType, int id, CancellationToken cancellationToken)
         {
             var dte = await this.GetDTEAsync();
-            IVsAsyncPackageInstaller client = await GetIVsPackageInstallerClientAsync();
+            INuGetPackageInstaller client = await GetIVsPackageInstallerClientAsync();
 
             Task testMethodAsync(string project, Dictionary<string, string> arguments) => TestMethodAsync(client, project, arguments);
             var model = new ProjectCommandTestingModel(dte, testMethodAsync);
@@ -60,16 +52,16 @@ namespace IVsTestingExtension
             return model;
         }
 
-        private async Task<IVsAsyncPackageInstaller> GetIVsPackageInstallerClientAsync()
+        private async Task<INuGetPackageInstaller> GetIVsPackageInstallerClientAsync()
         {
             IBrokeredServiceContainer brokeredServiceContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
             Assumes.Present(brokeredServiceContainer);
             IServiceBroker sb = brokeredServiceContainer.GetFullAccessServiceBroker();
-            IVsAsyncPackageInstaller client = await sb.GetProxyAsync<IVsAsyncPackageInstaller>(Descriptor, this.DisposalToken);
+            INuGetPackageInstaller client = await sb.GetProxyAsync<INuGetPackageInstaller>(Microsoft.VisualStudio.NuGetServices.PackageInstallerService, this.DisposalToken);
             return client;
         }
 
-        private async Task TestMethodAsync(IVsAsyncPackageInstaller VsAsyncPackageInstaller, string projectSelected, Dictionary<string, string> arguments)
+        private async Task TestMethodAsync(INuGetPackageInstaller VsAsyncPackageInstaller, string projectSelected, Dictionary<string, string> arguments)
         {
             arguments.TryGetValue("packageId", out string packageId);
             arguments.TryGetValue("packageVersion", out string packageVersion);
