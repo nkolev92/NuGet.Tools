@@ -54,11 +54,9 @@ namespace IVsTestingExtension.Tests
             }, _joinableTaskFactory);
         }
 
-        public void Clear()
+        public async Task ClearAsync()
         {
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-            ClearThePaneAsync().GetAwaiter().GetResult();
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
+            await ClearThePaneAsync();
         }
 
         public void Write(string text)
@@ -72,33 +70,40 @@ namespace IVsTestingExtension.Tests
             {
                 if (_channelPipeWriter == null)
                 {
-                    var pipe = new Pipe();
+                    await OpenNewChannelAsync(channelId, displayNameResourceId, cancellationToken);
 
-                    using (var outputChannelStore = await (await _serviceBrokerClient.GetValueAsync()).GetProxyAsync<IOutputChannelStore>(VisualStudioServices.VS2019_4.OutputChannelStore, cancellationToken))
+                    if (_channelPipeWriter == null)
                     {
-                        if (outputChannelStore.Proxy != null)
+                        // OutputChannel is not available so cache the output messages for later
+                        _deferredOutputMessages.Add(content);
+                        return;
+                    }
+                    else
+                    {
+                        // write any deferred messages
+                        foreach (var s in _deferredOutputMessages)
                         {
-                            await outputChannelStore.Proxy.CreateChannelAsync(channelId, displayNameResourceId, pipe.Reader, TextEncoding, cancellationToken);
-                            _channelPipeWriter = pipe.Writer;
-
-                            // write any deferred messages
-                            foreach (var s in _deferredOutputMessages)
-                            {
-                                // Flush when the original content is logged below
-                                await _channelPipeWriter.WriteAsync(GetBytes(content), cancellationToken);
-                            }
-                            _deferredOutputMessages.Clear();
+                            // Flush when the original content is logged below
+                            await _channelPipeWriter.WriteAsync(GetBytes(s), cancellationToken);
                         }
-                        else
-                        {
-                            // OutputChannel is not available so cache the output messages for later
-                            _deferredOutputMessages.Add(content);
-                            return;
-                        }
+                        _deferredOutputMessages.Clear();
                     }
                 }
                 await _channelPipeWriter.WriteAsync(GetBytes(content), cancellationToken);
                 await _channelPipeWriter.FlushAsync(cancellationToken);
+            }
+        }
+
+        private async Task OpenNewChannelAsync(string channelId, string displayNameResourceId, CancellationToken cancellationToken)
+        {
+            using (var outputChannelStore = await (await _serviceBrokerClient.GetValueAsync()).GetProxyAsync<IOutputChannelStore>(VisualStudioServices.VS2019_4.OutputChannelStore, cancellationToken))
+            {
+                if (outputChannelStore.Proxy != null)
+                {
+                    var pipe = new Pipe();
+                    await outputChannelStore.Proxy.CreateChannelAsync(channelId, displayNameResourceId, pipe.Reader, TextEncoding, cancellationToken);
+                    _channelPipeWriter = pipe.Writer;
+                }
             }
         }
 
@@ -125,6 +130,7 @@ namespace IVsTestingExtension.Tests
         private async Task ClearThePaneAsync()
         {
             await CloseChannelAsync();
+            await OpenNewChannelAsync(_channelId, _channelOutputName, CancellationToken.None);
         }
 
         protected virtual void Dispose(bool disposing)

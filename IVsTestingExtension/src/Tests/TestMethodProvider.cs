@@ -22,7 +22,7 @@ namespace IVsTestingExtension.Tests
         {
             var channel = await _outputChannel.GetValueAsync();
 
-            channel.Clear();
+            await channel.ClearAsync();
             await Task.Delay(20);
             channel.Write(iteration + ": Starting restore now..." + Environment.NewLine);
             await Task.Delay(20);
